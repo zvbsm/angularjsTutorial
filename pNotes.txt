@@ -1,0 +1,126 @@
+each start up will consist of the following steps after setup is complete
+	1- in terminal type - cd angular-phonecat
+	2- change step of tutorial - git checkout -f step-0
+	3- in seperate terminal - cd angular-phonecat and then - npm start to start server
+	4- go to http://http://localhost:8000/app/
+	5- npm test for karma - npm run protractor for e2e testing (1st terminal)
+
+
+
+SETUP
+	step:
+	1)download angular-phonecat:
+		*git clone --depth=14 https://github.com/angular/angular-phonecat.git
+	2)change directory
+		*cd angular-phonecat
+	3)install Node.Js
+		-go to website http://nodejs.org/download
+		-check version in git console
+			*node --version
+	4)download tool dependencies (bower)
+		*npm install
+	5)npm helper scripts to run common tasks that are needed while developing
+		*npm start (start a local development web-server)
+		*npm test (start the karma unit test runner)
+		*npm run protractor (run the protractor end to end (e2e) tests
+		*npm run update-webdriver (install the drivers needed by protractor
+	6)after running npm start, the site is located at
+		http://localhost:8000/app/index.html
+	7)run unit tests with (karma will read configuration file at test/karma.conf.js)
+		*npm test
+		its good to leave this running all the time for live feedback during development about whether changes 
+
+pass the unit tests
+	8)install drivers for e2e tests (only do once)
+		*npm run update-webdriver
+		when running e2e test, first npm start, then npm run protractor
+
+--------------------------------------------------------
+
+
+1 - STATIC TEMPLATE
+	normally a page would be generated with the following html code
+<ul>
+  <li>
+    <span>Nexus S</span>
+    <p>
+      Fast just got faster with Nexus S.
+    </p>
+  </li>
+  <li>
+    <span>Motorola XOOM™ with Wi-Fi</span>
+    <p>
+      The Next, Next Generation tablet.
+    </p>
+  </li>
+</ul>
+
+2 - ANGULAR TEMPLATES
+	here the same code is simplified with angular
+<html ng-app="phonecatApp">
+<head>
+  ...
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="js/controllers.js"></script>
+</head>
+<body ng-controller="PhoneListCtrl">
+
+  <ul>
+    <li ng-repeat="phone in phones">
+      <span>{{phone.name}}</span>
+      <p>{{phone.snippet}}</p>
+    </li>
+  </ul>
+
+ng-repeat says to gather all the 'phone' variables in the phones object and for each one, <span> will show the phone name 
+
+and <p> will show the phone snippet(about the phone). each phone will be created in an <li> element.
+
+simple test for this code would be:
+describe('PhoneListCtrl', function(){
+
+  it('should create "phones" model with 3 phones', function() {
+    var scope = {},
+        ctrl = new PhoneListCtrl(scope);
+
+    expect(scope.phones.length).toBe(3);
+  });
+
+});
+
+when ng-repeat used in a table, it added new table elements for each array. Assuming ng-repeat duplicates the element it 
+
+was added to when repeating the array. where {{i}} is placed, the array item gets repeatedly created with the next array 
+
+along with the parent element and any element in between {{i}} and ng-repeat="i in..."
+<table>
+  <tr><th>row number</th></tr>
+  <tr ng-repeat="i in [0, 1, 2, 3, 4, 5, 6, 7]"><td>{{i}}
+  </td></tr>
+</table>
+
+EXTRA POINTS: try and make an 8x8 table using an additional ng-repeat
+<tr ng-repeat="x in [0,1,2,3,4,5,6,7]">{{i+1}}<th ng-repeat="...">{{x+1}}</th></tr>
+
+3 - FILTERING REPEATERS
+the input gets classified as an ng-model named 'query'
+Search: <input ng-model="query">
+
+in the list element, the <li> uses ng-repeat and is defined to repeat the 'phone in phones' and filter by the text input 
+
+from the model 'query'
+<li ng-repeat="phone in phones | filter:query">
+then the values of {{phone.name}} and {{phone.snippet}} are placed in the elements that will be repeated
+        <li ng-repeat="phone in phones | filter:query">
+          {{phone.name}}
+          <p>{{phone.snippet}}</p>
+	</li>
+
+by moving the ng-controller to the html tag with the ng-app, adding {{query}} to <title> tag, updating scenarios.js for 
+
+e2e testing, verifies that title was properly upated with {{query}} from the input ng-model="query". testing defined this 
+
+with expect(browser.getTitle()).toMatch(...)
+while adding {{query}} to the title works fine, using <title ng-bind-template="Google Phone Gallery: {{query}}"> ensures 
+
+the angular code is invisible while the page is loading.
