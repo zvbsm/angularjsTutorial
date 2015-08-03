@@ -41,7 +41,7 @@ this technique is often used in unit tests to mock out a service's dependencies
 
 UNIT TESTING: method of testing the code, examples include using a "jasmine spy(mock)" creating functions jasmine.createSpy(), defining mock, module, inject, code includes it('should ....', function() {more code; expect(mock.alert).not.toHaveBeenCalled(); ... etc...
 
-FILTER: formats the value of an expression for display to the user. such as currency presenting the value in money ($10.50)
+FILTER: formats the value of an expression for display to the user. such as currency presenting the value in money. can chain filters as {{expression | filter1 | filter2 | filter3}}. filters can have arguments {{expression | filter:argument}} example {{ 12345 | number:2}} formats the number as 12,345.00 by specifying the filter type as "number" and then the fraction size as "2", the number is the amount of decimal points so 0 would return 12,345. filters can also be used in controllers, services, and directives. 
 
 DATA BINDING: whenever an input value changes, the value of the expressions are automatically recalculated and update the DOM accordingly. this is considered "live bindings". automatic synchronization of data between model and view components. first the template is compiled on the browser, this produces a live view. any changes to the view are immediately reflected in the model and changes in the model are propegated to the view. 
 
@@ -190,7 +190,7 @@ CONTROLLER: module and controller code for the specific html app setup
 
 DEPENDENCY INJECTION (DI): software design pattern that deals with how objects and functions get created and how they get a hold of their dependencies. everything in angular is created and wired using dependency injection. its in charge of creating components, resolving their dependencies, and providing them to other components. can be used when defining components or when providing 'run' and 'config' in a module.
 
-INJECTOR: the DI container
+$INJECTOR: used to retrieve object instances as defined by provider, instantiate types, invoke methods, and load modules.
 
 .CONFIG():specify a function that needs to be ran at configuration phase. only providers and constants can be injected into configuration blocks.
 -----example:
