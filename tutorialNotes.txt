@@ -2,13 +2,12 @@ each start up will consist of the following steps after setup is complete
 	1- in terminal type - cd angular-phonecat
 	2- change step of tutorial - git checkout -f step-0
 	3- in seperate terminal - cd angular-phonecat and then - npm start to start server
-	4- go to http://http://localhost:8000/app/
+	4- go to http://localhost:8000/app/index.html
 	5- npm test for karma - npm run protractor for e2e testing (1st terminal)
 
 
 
 SETUP
-	step:
 	1)download angular-phonecat:
 		*git clone --depth=14 https://github.com/angular/angular-phonecat.git
 	2)change directory
@@ -39,7 +38,7 @@ pass the unit tests
 
 
 1 - STATIC TEMPLATE
-	normally a page would be generated with the following html code
+	compare normal html with same code in angular
 <ul>
   <li>
     <span>Nexus S</span>
@@ -56,7 +55,7 @@ pass the unit tests
 </ul>
 
 2 - ANGULAR TEMPLATES
-	here the same code is simplified with angular
+	angular style for previous code
 <html ng-app="phonecatApp">
 <head>
   ...
@@ -74,7 +73,7 @@ pass the unit tests
 
 ng-repeat says to gather all the 'phone' variables in the phones object and for each one, <span> will show the phone name 
 
-and <p> will show the phone snippet(about the phone). each phone will be created in an <li> element.
+and <p> will show the phone snippet. each phone will be created in an <li> element along with their <span> and <p>.
 
 simple test for this code would be:
 describe('PhoneListCtrl', function(){
@@ -100,10 +99,10 @@ along with the parent element and any element in between {{i}} and ng-repeat="i 
 </table>
 
 EXTRA POINTS: try and make an 8x8 table using an additional ng-repeat
-<tr ng-repeat="x in [0,1,2,3,4,5,6,7]">{{i+1}}<th ng-repeat="...">{{x+1}}</th></tr>
+<tr ng-repeat="x in [0,1,2,3,4,5,6,7]">{{i+1}}<td ng-repeat="...">{{x+1}}</td></tr>
 
 3 - FILTERING REPEATERS
-the input gets classified as an ng-model named 'query'
+the input becomes the owner of an ng-model named 'query'
 Search: <input ng-model="query">
 
 in the list element, the <li> uses ng-repeat and is defined to repeat the 'phone in phones' and filter by the text input 
@@ -123,4 +122,46 @@ e2e testing, verifies that title was properly upated with {{query}} from the inp
 with expect(browser.getTitle()).toMatch(...)
 while adding {{query}} to the title works fine, using <title ng-bind-template="Google Phone Gallery: {{query}}"> ensures 
 
-the angular code is invisible while the page is loading.
+the angular code is invisible to the user while the page is loading.
+
+4 - TWO-WAY DATA BINDING
+dynamic ordering is implemented by creating a new model property and wiring together with the repeater, data binding 
+
+handles the rest. in this example, angular creates the two-way data binding for orderProp and its then used as the input 
+
+for the orderBy filter.
+	<select ng-model="orderProp">
+  		<option value="name">Alphabetical</option>
+  		<option value="age">Newest</option>
+	</select>
+since the controller sets orderProp to 'age' and the html <option> has the value of 'age', angular automatically sets the 
+
+age option as the default option for select when the page is loaded. $scope.orderProp = 'age';
+adding - to the value reversed the order the list was displayed <option value="-age">
+
+5 - XHRs & DEPENDENCY INJECTION
+	phonecatApp.controller('PhoneListCtrl', function ($scope, $http) {
+  		$http.get('phones/phones.json').success(function(data) {
+    			$scope.phones = data;	});
+injector id's $http as a dependency of the controller. $http makes a server request "http get", define directory and when 
+
+successful, run this code. the data of the json file gets stored to the $scope.phones model.
+	function PhoneListCtrl($scope, $http) {...}
+	PhoneListCtrl.$inject = ['$scope', '$http'];
+	phonecatApp.controller('PhoneListCtrl', PhoneListCtrl);
+can be coded as 
+	function PhoneListCtrl($scope, $http) {...}
+	phonecatApp.controller('PhoneListCtrl', ['$scope', '$http', function($scope, $http){function code}]);
+so the dependency injector can identify the services correctly when the code is minified. 
+	<pre>{{phones | filter:query | orderBy:orderProp | json}}</pre>
+takes all the phones, filter:query refers to ng-model="query" for sorting the phones and then checks the option user 
+
+selected with orderBy:orderProp, lists the phones in json format
+	adding javascript code.splice(0, 5) limited the results to the first 5 phones. 
+	array.splice(index,howmany,item1,...,itemx)
+		item1,...,itemx is options. each item is a new item to add to the array
+		index specifies where to begin add/remove in array, negative value starts at the end going in reverse
+		howmany specifies how many items to remove from the point specified in index
+
+6 - TEMPLATING LINKS & IMAGES
+refer to the json file for image location with <img ng-src="{{phone.imageUrl}}"> using src="{{expression}}" doesnt work
