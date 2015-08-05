@@ -164,4 +164,125 @@ selected with orderBy:orderProp, lists the phones in json format
 		howmany specifies how many items to remove from the point specified in index
 
 6 - TEMPLATING LINKS & IMAGES
-refer to the json file for image location with <img ng-src="{{phone.imageUrl}}"> using src="{{expression}}" doesnt work
+refer to the json file for image location with <img ng-src="{{phone.imageUrl}}"> 
+src="{{expression}}" doesnt work
+
+7 - ROUTING & MULTIPLE VIEWS
+need to install "angular-route" as a dependency for the app to set up routing services. 
+npm method is - npm install angular-route --save
+then add ngroute as dependency with - angular.module('myApp, [require('angular-route')]);
+
+all application routes in angular are declared via the $routeProvider, which is the provider of the $route service. 
+	when(path, route);
+		adds new route definition to the $route service. 
+	otherwise(parameters);
+		sets route definition that will be used on route change when no other route definition is matched.
+	Property: 
+		caseInsensitiveMatch : a boolean property indicating if routes defined using this provider should be 
+
+matched using a case insensitive algorithm, defaults to false.
+
+	https://docs.angularjs.org/api/ngRoute/service/$route#example for route example
+
+routes can implement deep linking, which allows utilizing browser's history nav buttons and bookmarks.
+providers are object that provide/create instances of services and expose configuration APIs that can be used to control 
+
+the creation and runtime behvoir of a service, in this case the $routeProvider exposes APIs that allow to define routes 
+
+for the application. providers can only be injected into config functions. cant inject $routeProvider into controller 
+
+(PhoneListCtrl). 
+
+$route service is usually used along with ngView directive. the role of ngView is to include the view template for the 
+
+current route into the layout template (main page such as index.html).
+
+index.html cut the contents in the main container div and put them into a seperate html page. the index page acts as a 
+
+the view tempate, a 3rd file also created containing TBD: detail view for <span>{{phoneId}}</span> to serve as the 
+
+placeholder template. 
+a seperate .js file lists the modules ngRoute and controller as dependencies of the App 
+	var phonecatApp = angular.module('phonecatApp', [
+  		'ngRoute',
+  		'phonecatControllers'	]);
+then uses .config to inject the provider $routeProvider into the function and use the .when() with $routeProvider to 
+
+define the routes.
+	phonecatApp.config(['$routeProvider',
+  		function($routeProvider) {
+    			$routeProvider.
+      				when('/phones', {
+        				templateUrl: 'partials/phone-list.html',
+        				controller: 'PhoneListCtrl'	
+				}).
+      				when('/phones/:phoneId', {
+        				templateUrl: 'partials/phone-detail.html',
+        				controller: 'PhoneDetailCtrl'
+      				}).
+      				otherwise({
+        				redirectTo: '/phones'
+      				});	}]);
+when('/phones') displays the phone list view phone-list.html and uses PhoneListCtrl
+when('/phones/:phoneId') when :phoneId is in the route, it is a variable in the URL
+otherwise({redirectTo: '/phones'}) defaults to the /phones view when browser address doesnt match the previously defined 
+
+routes.
+PhoneDetailCtrl was added to controllers.js for the phone detail view, takes $routeParams and $scope as parameters for 
+
+the function then $scope.phoneId = $routeParams.phoneId;
+$route service uses the route /phones/:phoneId as a template that is matched against the current URL, all variables with 
+
+: are extracted into $routeParams object.
+	phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams',
+  		function($scope, $routeParams) {
+    			$scope.phoneId = $routeParams.phoneId;	}]);
+Here the PhoneDetailCtrl updated the phoneId for $scope to the phoneId in the $routeParams object which was taken from 
+
+:phoneId via the $route service. phoneId was defined in the phone's json file "id": "nexus-s"
+
+8 - MORE TEMPLATING
+in Controllers.js gets the json file associated with the phoneId that has been extracted from the current route using the 
+
+$route servcie
+	$http.get('phones/' + $routeParams.phoneId + '.json').success(function(data) {
+
+9 - FILTERS
+Writing and testing custom filters
+Custome filter called 'checkmark' that returns a check or an x, this filter is a part of the module 'phonecatFilters'
+	angular.module('phonecatFilters', []).filter('checkmark', function() {
+  		return function(input) {
+    			return input ? '\u2713' : '\u2718';	};	});
+phonecatFilters is then added as a dependency to the phonecatApp 
+	angular.module('phonecatApp', ['ngRoute','phonecatControllers','phonecatFilters']);
+the filter code needs to be added to the webpage scripts <script src="filter.js"></script> 
+so it can be used on the page {{ expression | filter }} 
+{{ phone.connectivity.infrared | checkmark }}
+checks the json data for phones connectivity.infrared. then updates with check or x if infrared is true or false
+this filter could be tested as:
+describe the checkmark filter in the module phonecatFilters, acess the filter to be tested by using inject(function
+
+(checkmarkFilter) the word Filter has been added to checkmark. return the proper symbols for true or false.
+	describe('filter', function() {
+
+  		beforeEach(module('phonecatFilters'));
+
+  		describe('checkmark', function() {
+
+    		it('should convert boolean values to unicode checkmark or cross',
+        		inject(function(checkmarkFilter) {
+      			expect(checkmarkFilter(true)).toBe('\u2713');
+      			expect(checkmarkFilter(false)).toBe('\u2718');
+    		}));	});	}); 
+
+10 - EVENT HANDLERS
+in the controller, set $scope.mainImageUrl = data.images[0] to default to the first image in the json data
+then create event handler function that changes the value of mainImageUrl
+	$scope.setImage = function(imageUrl) {
+      		$scope.mainImageUrl = imageUrl;	};
+the html page displays the image with ng-src and uses ng-click event handler to call the setImage function. When the user 
+
+clicks the thumbnail, the event handler changes the value of mainImageUrl and displays the new image.
+
+ 
+	<img ng-src="{{img}}" ng-click="setImage(img)">
