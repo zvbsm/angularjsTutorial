@@ -1,12 +1,18 @@
-angular modifies the normal javascript flow by providing its own event processing loop. this splits javascript into classical and angular execution context. only operations which are applied in the angular execution context will benefit from angular data-binding, exception handeling, property watching, etc... you can use $apply() to enter angular from javascript. $apply is only needed manually when implementing custom event callbacks (angular already does it for its own such as controllers, services) or when working with third-party library callbacks.
+angular modifies the normal javascript flow by providing its own event processing loop. this splits javascript into classical and angular execution context. only operations which are applied in the angular execution context will benefit from angular data-binding, exception handeling, property watching, etc... you can use $apply() to enter angular from javascript. $apply is only needed manually when implementing custom event callbacks (angular already does it for its own such as controllers, services) or when working with third-party library callbacks. angular is best for generic web apps, not for computationally intensive math programs or games. angular is great in the sense that you can declare the UI and place markup directly into the HTML. This makes it much easier to understand the way the app/site is working, whereas javascript is more behind the scenes, it's hard to tell what is happening just by looking at the HTML in that case. Angular makes it more obvious where data is being bound to. At the same time seperating functions as directives, controllers, services, keeps things organized in a way so the purpose of the app is more clear. 
 
 TEMPLATE: an HTML file with angular markup
+
+STATIC TEMPLATE: 
 
 COMPILER: processes the new markup from the template
 
 VIEW: shows the end result on the screen to the user after the compiler has taken the template and processed the information
 
-DIRECTIVES: apply special behavior to attributes or elements in the HTML
+DIRECTIVES: apply special behavior to attributes or elements in the HTML. they are angular's way of bringing additional functionality to HTML. Directives define how the view behaves. define the DOM manipulation within the directive and the app updates the view with the new data recieved from the directives. all DOM manipulation should be handled by directives, not controllers.
+-----custom attribute
+	<ul data-directivename></ul>
+     custom class name
+	<ul class="directivename"></ul>
 
 MODULE: angular module is the app (ng-app) which contains controllers and factories
 
@@ -39,13 +45,18 @@ $PROVIDE: a way to register a service instead of using module's "config" functio
 -----$provide.factory('serviceID', function(){code service function here});
 this technique is often used in unit tests to mock out a service's dependencies
 
-UNIT TESTING: method of testing the code, examples include using a "jasmine spy(mock)" creating functions jasmine.createSpy(), defining mock, module, inject, code includes it('should ....', function() {more code; expect(mock.alert).not.toHaveBeenCalled(); ... etc...
+UNIT TESTING: method of testing the code, examples include using a "jasmine spy(mock)" A typical jasmine test starts by first describing what is being tested, describe what it should do, then define the process to confirm it does it. for example:
+	describe('the function', function() {
+		it('should do something', function() {
+			var variables = [array of variables here];
+			var function = function2(variables);
+			expect(function2).toEqual(result);
 
-FILTER: formats the value of an expression for display to the user. such as currency presenting the value in money. can chain filters as {{expression | filter1 | filter2 | filter3}}. filters can have arguments {{expression | filter:argument}} example {{ 12345 | number:2}} formats the number as 12,345.00 by specifying the filter type as "number" and then the fraction size as "2", the number is the amount of decimal points so 0 would return 12,345. filters can also be used in controllers, services, and directives. 
+FILTER: formats the value of an expression for display to the user. such as currency presenting the value in money. can chain filters as {{expression | filter1 | filter2 | filter3}}. filters can have arguments {{expression | filter:argument}} example {{ 12345 | number:2}} formats the number as 12,345.00 by specifying the filter type as "number" and then the fraction size as "2", the number is the amount of decimal points so 0 would return 12,345. Inject the number filter as a dependency as numberFilter (<filterName>Filter). filters can also be used in controllers, services, and directives. Filters are simililar to directives but are only concerned with data transformation.
 
 DATA BINDING: whenever an input value changes, the value of the expressions are automatically recalculated and update the DOM accordingly. this is considered "live bindings". automatic synchronization of data between model and view components. first the template is compiled on the browser, this produces a live view. any changes to the view are immediately reflected in the model and changes in the model are propegated to the view. 
 
-CONTROLLER: exposes variables and functionality to expressions and directives. The recommended way of declaring Controllers is using array notation. 
+CONTROLLER: exposes variables and functionality to expressions and directives. A controller's job is to manipulate the scope. The recommended way of declaring Controllers is using array notation. 
 -----example:
 	myModule.controller('myController',['$scope', 'dep1','dep2', function($scope, dep1, dep2) {
 		$scope.aMethod = function() {code here};}]);
@@ -54,7 +65,7 @@ CONTROLLER: exposes variables and functionality to expressions and directives. T
 		var myController = function($scope, dep1, dep2) {code here};
 		myController.$inject = ['$scope','dep1','dep2'];
 		myModule.controller('myController', myController);
-		$inject must order the array the same as the var myController did.
+		$inject must order the array the same way the var myController did.
 in angular a controller is defined by javascript constructor function that is used to augment the angular scope. when a controller is attached via ng-controller, a new controller object is instantiated and a new child scope is created and made available as an injectable parameter to the controller's constructor function as "$scope". if the controller has been attached using the "controller as" syntax, then the controller instance will be assigned to a property on the new scope. use controllers to set up the initial state of the $scope object and add behavor to the $scope. DO NOT use controllers to manipulate DOM, format input (use angular form controls instead), filter output(use angular filters instead), share code or state across controllers(use services), manage the life-cycle of other components(like creating service instances). .controller() keeps the controllers constructor function out of the global scope. controllers should only contain business logic for a single view. encapsulate work that doesnt belong in controllers into services and use services in controllers via DI. you can associate controllers with scope objects via ngController directive or $route service. Scopes interact with controllers in the following situations: 1)controllers use scopes to expose controller methods to templates. 2)controllers define methods that can mutate the model(properties of the scope) 3)controllers can register watches on the model. these watches execute immediately after the controller behavior executes.
 
 SCOPE: an object that refers to the application model. ng-app (owner of the root scope) has an ng-controller that creates an object(scope) to be used within it, the ng-controller creates a child scope to the root scope. it is an execution context for expressions. scopes mimic the DOM structure of the application. scopes can watch expressions and propegate events. {{username}} is meaningless unless it is evaluated against a specific scope which defines the username property. Attach methods to the $scope object to add behavior that reacts to events or executes computation in the view. any objects assigned to the scope become model properties. any methods assigned to the scope are available in the template/view and can be invoked via angular expressions and "ng" event handlers such as ngClick.
@@ -142,7 +153,7 @@ NG-CLICK: specify the function to run when the button is clicked (ng-click="invo
 
 -----When the application grows it is a good practice to move view-independent logic from the controller into a service
 
-SERVICE: substitutable objects that are wired together using dependancy injection. use services to organize and share code across an app(resuable code defining common functions in a seperate file for the main file to refer to when needed). to use an angular service, you add it as a dependency for the component(controller,service,filter,or directive)that depends on the service. $provide service is responsible for telling angular how to create new injectible things; these things are called services. services are defined by things called providers, which is what is being created when $provide is used. defining a provider is done via the provider method on the $provide service, which can be called by asking for it to be injected into an applications config function. 
+SERVICE: substitutable objects that are wired together using dependancy injection. Usually services are synced up to a server to maintain data and expose methods to push and pull data from the server. Can also use services to organize and share code across an app(resuable code defining common functions in a seperate file for the main file to refer to when needed) meaning multiple controllers for example could refer to the same service to share it's resources. to use an angular service, you add it as a dependency for the component(controller,service,filter,or directive)that depends on the service. $provide service is responsible for telling angular how to create new injectible things; these things are called services. services are defined by things called providers, which is what is being created when $provide is used. defining a provider is done via the provider method on the $provide service, which can be called by asking for it to be injected into an applications config function. 
 -----example:
 	myModule.config(function($provide) {
 	//angular, provide a new service called 'greeting'. $provide.provider will define 'greeting' as a function.
