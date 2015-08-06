@@ -276,13 +276,140 @@ describe the checkmark filter in the module phonecatFilters, acess the filter to
     		}));	});	}); 
 
 10 - EVENT HANDLERS
-in the controller, set $scope.mainImageUrl = data.images[0] to default to the first image in the json data
-then create event handler function that changes the value of mainImageUrl
-	$scope.setImage = function(imageUrl) {
-      		$scope.mainImageUrl = imageUrl;	};
-the html page displays the image with ng-src and uses ng-click event handler to call the setImage function. When the user 
+For this example, it will create clickable images that update the main image with the thumbnail that was clicked. First 
 
-clicks the thumbnail, the event handler changes the value of mainImageUrl and displays the new image.
+in the HTML, an <li> is set to ng-repeat="img in phone.images"> which is referring to each "img/phones/nexus-s.0.jpg" 
 
- 
-	<img ng-src="{{img}}" ng-click="setImage(img)">
+inside an "images" object in the json file. then inside the <li> is the <img> child element with ng-src="{{img}}" so this 
+
+applies the "img/phones.nexus-s.0.jpg" as the src for the img element and this process is repeated by the <li> element 
+
+for all the imgs in the array of the "images" object. for each <img> element there is also ng-click="setImage(img)" which 
+
+calls a function setImage() defined in the controller that holds this element. The function in the controller is defined 
+
+by using $http.get to get the json data, then stores the data in the $scope.phone object, then stores the first item in 
+
+the array of images in the $scope.mainImageUrl so it is the current image displayed in {{mainImageUrl}} on the HTML page 
+
+using ng-src="{{mainImageUrl}}". then $scope.setImage is created as a function that updates $scope.mainImageUrl to the 
+
+imageUrl that was passed as a parameter from img when the function is called setImage(img). When this function updates 
+
+mainImageUrl, the element that {{mainImageUrl}} automatically updates with the new value.
+	<img ng-src="{{mainImageUrl}}" class="phone">
+
+	...
+
+	<ul class="phone-thumbs">
+  		<li ng-repeat="img in phone.images">
+    			<img ng-src="{{img}}" ng-click="setImage(img)">
+  		</li>
+	</ul>
+
+	phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', '$http',
+ 		function($scope, $routeParams, $http) {
+    			$http.get('phones/' + $routeParams.phoneId + '.json').success(function(data) {
+      			$scope.phone = data;
+      			$scope.mainImageUrl = data.images[0];	});
+
+    		$scope.setImage = function(imageUrl) {
+      			$scope.mainImageUrl = imageUrl;	};  }]);
+
+11 - REST AND CUSTOM SERVICES
+using the RESTful client will replace the way the app fetches data rather than using $http. While $http does the job fine 
+
+using "get" "post" and "delete", $resource takes $http functionality and makes it useful for RESTful API scenarios. 
+
+$resource should only be used for RESTful API, otherwise just use $http.
+It is provided by Angular in the ng-resource module, this must be installed seperately from angular to use. would be 
+
+added as dependency along with angular, angular-route, etc... in the package.json. the main HTML page would load the 
+
+custom service script <script src="services.js"> as well as angular resource module <script src=".../angular-
+
+resource.js"> that was installed. services.js would define the service as follows:
+	var phonecatServices = angular.module('phonecatServices', ['ngResource']);
+
+	phonecatServices.factory('Phone', ['$resource',
+  		function($resource){
+    			return $resource('phones/:phoneId.json', {}, {
+      			query: {method:'GET', params:{phoneId:'phones'}, isArray:true}	});	}]);
+phonecatServices would then be added to the list of dependencies for the phonecatApp
+	angular.module('phonecatApp',['ngRoute','phonecatControllers','phonecatFilters','phonecatServices']);
+when storing the data from the json file into $scope.phones, the $http method would be
+	$http.get('phones/phones.json').success(function(data) {
+  		$scope.phones = data; });
+and the $resource method would be
+	$scope.phones = Phone.query();
+
+12 - APPLYING ANIMATIONS
+angular provides animation functionality in the ng-animate module which is seperate from angular.js just as angular-
+
+resrouce and angular-routes is. include the jquery.js library before angular-animate.js, then add the animations.js 
+
+service after angular-animate.js.
+ngAnimate gets added to the animation service as a dependency 
+	angular.module('phonecatAnimations',['ngAnimate']);
+then the phonecatAnimations service gets added as dependancy to the app
+	angular,module('phonecatApp',['phonecatAnimations','...
+the HTML page only needs the class set on the element for the CSS. then CSS sets the animation code. examples:
+	.phone-listing.ng-enter {transition: 0.5s linear all; opacity: 0; height: 0; overflow: hidden}
+	.phone-listing.ng-leave {opacity: 1; overflow: hidden;}
+	.phone-listing.ng-leave.ng-leave-active {opacity: 0; height: 0; padding-top: 0; padding-bottom: 0;}
+-----ng-enter is applied to element when new phone is added to the list
+	ng-move is applied when items are moved around in the list
+	ng-leave is applied when items are removed
+enter, move, and leave are "starting" classes for the beginning of animations
+"-active" is applied at the end of any of the starting classes to represent the end of animation
+
+.view-container {
+  position: relative;
+}
+-----view container is positioned relative which will effect the elements contained within it
+
+.view-frame.ng-enter, .view-frame.ng-leave {
+  background: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+-----view-frame.ng-enter  and ng-leave will be positioned absolute to its parent element that has had a position set
+
+.view-frame.ng-enter {
+  -webkit-animation: 0.5s fade-in;
+  -moz-animation: 0.5s fade-in;
+  -o-animation: 0.5s fade-in;
+  animation: 0.5s fade-in;
+  z-index: 100;
+}
+-----view-frame.ng-enter will be displayed above all elements using z-index and will fade in for 1/2 a second
+
+.view-frame.ng-leave {
+  -webkit-animation: 0.5s fade-out;
+  -moz-animation: 0.5s fade-out;
+  -o-animation: 0.5s fade-out;
+  animation: 0.5s fade-out;
+  z-index:99;
+}
+-----the view-frame will be displayed beneath the new view-frame using z-index and will fade out for 1/2 second
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+-----@keyframes animationname {keyframes-selector {css-styles;}}
+-----keyframes specify the animation code, where from and to is the same as 0% and 100%, 0% is the beginning and 100% is 
+
+the end
+-----animationname is the defined name of the animation, in this case it creates an animation called fade-in. so when 
+
+ng-leave updates the css to 0.5s fade-in, fade-in is changing the opacity from 0 to 1 in 0.5s
+
+ng-class="{active:mainImageUrl==img}" adds the active class to the img that equals the img value in mainImageUrl and 
+
+removes active from the img that is not.
+
+END
+can bootstrap angular projects with angular-seed https://github.com/angular/angular-seed
