@@ -1,4 +1,22 @@
-angular modifies the normal javascript flow by providing its own event processing loop. this splits javascript into classical and angular execution context. only operations which are applied in the angular execution context will benefit from angular data-binding, exception handeling, property watching, etc... you can use $apply() to enter angular from javascript. $apply is only needed manually when implementing custom event callbacks (angular already does it for its own such as controllers, services) or when working with third-party library callbacks. angular is best for generic web apps, not for computationally intensive math programs or games. angular is great in the sense that you can declare the UI and place markup directly into the HTML. This makes it much easier to understand the way the app/site is working, whereas javascript is more behind the scenes, it's hard to tell what is happening just by looking at the HTML in that case. Angular makes it more obvious where data is being bound to. At the same time seperating functions as directives, controllers, services, keeps things organized in a way so the purpose of the app is more clear. 
+angular modifies the normal javascript flow by providing its own event processing loop. this splits javascript into 
+
+classical and angular execution context. only operations which are applied in the angular execution context will benefit 
+
+from angular data-binding, exception handeling, property watching, etc... you can use $apply() to enter angular from 
+
+javascript. $apply is only needed manually when implementing custom event callbacks (angular already does it for its own 
+
+such as controllers, services) or when working with third-party library callbacks. angular is best for generic web apps, 
+
+not for computationally intensive math programs or games. angular is great in the sense that you can declare the UI and 
+
+place markup directly into the HTML. This makes it much easier to understand the way the app/site is working, whereas 
+
+javascript is more behind the scenes, it's hard to tell what is happening just by looking at the HTML in that case. 
+
+Angular makes it more obvious where data is being bound to. At the same time seperating functions as directives, 
+
+controllers, services, keeps things organized in a way so the purpose of the app is more clear. 
 
 TEMPLATE: an HTML file with angular markup
 
@@ -6,9 +24,17 @@ STATIC TEMPLATE:
 
 COMPILER: processes the new markup from the template
 
-VIEW: shows the end result on the screen to the user after the compiler has taken the template and processed the information
+VIEW: shows the end result on the screen to the user after the compiler has taken the template and processed the 
 
-DIRECTIVES: apply special behavior to attributes or elements in the HTML. they are angular's way of bringing additional functionality to HTML. Directives define how the view behaves. define the DOM manipulation within the directive and the app updates the view with the new data recieved from the directives. all DOM manipulation should be handled by directives, not controllers.
+information
+
+DIRECTIVES: apply special behavior to attributes or elements in the HTML. they are angular's way of bringing additional 
+
+functionality to HTML. Directives define how the view behaves. define the DOM manipulation within the directive and the 
+
+app updates the view with the new data recieved from the directives. all DOM manipulation should be handled by 
+
+directives, not controllers.
 -----custom attribute
 	<ul data-directivename></ul>
      custom class name
@@ -16,25 +42,49 @@ DIRECTIVES: apply special behavior to attributes or elements in the HTML. they a
 
 MODULE: angular module is the app (ng-app) which contains controllers and factories
 
-NG-APP: the angular application. an attribute which is linked to a directive that automatically initializes the application. placed on the parent element that holds the section of the page that will use angular. can be the whole page <html ng-app="appName"> or just the parent element containing all elements that will use angular.
+NG-APP: the angular application. an attribute which is linked to a directive that automatically initializes the 
+
+application. placed on the parent element that holds the section of the page that will use angular. can be the whole page 
+
+<html ng-app="appName"> or just the parent element containing all elements that will use angular.
 
 NG-MODEL: directive that stores/updates the value of the input field into/from a variable
 
------in Angular, the only place where an application should access the DOM is within directives. This is important because artifacts that access the DOM are hard to test. If you need to access the DOM directly you should write a custom directive for this.
+-----in Angular, the only place where an application should access the DOM is within directives. This is important 
 
-{{ EXPRESSION | FILTER }}: when the compiler encounters this markup, it will replace it with the resulting value of the markup. 
+because artifacts that access the DOM are hard to test. If you need to access the DOM directly you should write a custom 
 
-EXPRESSION: code that allows to read and write variables. those variables are not global variables and dont have access to global variables(will only be evaluated within scope object)use $window and $location in functions called from expressions. this provides mockable access to globals($window.alert('hello ' + $scope.name);. angular provides a scope for these variables accessible to expressions. cannot use conditionals, loops, or exceptions(if,while,else). 
+directive for this.
+
+{{ EXPRESSION | FILTER }}: when the compiler encounters this markup, it will replace it with the resulting value of the 
+
+markup. 
+
+EXPRESSION: code that allows to read and write variables. those variables are not global variables and dont have access 
+
+to global variables(will only be evaluated within scope object)use $window and $location in functions called from 
+
+expressions. this provides mockable access to globals($window.alert('hello ' + $scope.name);. angular provides a scope 
+
+for these variables accessible to expressions. cannot use conditionals, loops, or exceptions(if,while,else). 
 
 MODEL: values that are stored in variables on the scope within angular. 
 
-FACTORY: service factory function generates the single object or function that represents the service to the rest of the application. the object or function returned by the service is injected into any component (controller, service, filter, or directive) that specifies a dependency on the service. typically you register a service by using the module factory 
+FACTORY: service factory function generates the single object or function that represents the service to the rest of the 
+
+application. the object or function returned by the service is injected into any component (controller, service, filter, 
+
+or directive) that specifies a dependency on the service. typically you register a service by using the module factory 
 -----angular.module('myModule',[]);
 	myModule.factory('serviceID', function() {define the service here});
 this is not registering a service instance, but a factory function that will create this instance when its called.
-services can have their own dependencies just like declaring dependencies in a controller. dependencies are specified in the service's factory function signature 
+services can have their own dependencies just like declaring dependencies in a controller. dependencies are specified in 
+
+the service's factory function signature 
 -----module.factory('nameofDependantService',['$scope', function(){code for this service}]);
-	module.factory('nameThisFactory', ['nameOfDependantService', function(nameOfDependantService) {code here using value of nameOfDependantService}]);
+	module.factory('nameThisFactory', ['nameOfDependantService', function(nameOfDependantService) {code here using 
+
+value of nameOfDependantService}]);
 Factory Methods include directives, services, or filters. the recommended way of declaring factories is:
 	angular.module('myModule', [])
 	.factory('serviceId', ['depService', function(depService) {function code here}])
@@ -45,36 +95,134 @@ $PROVIDE: a way to register a service instead of using module's "config" functio
 -----$provide.factory('serviceID', function(){code service function here});
 this technique is often used in unit tests to mock out a service's dependencies
 
-UNIT TESTING: method of testing the code, examples include using a "jasmine spy(mock)" A typical jasmine test starts by first describing what is being tested, describe what it should do, then define the process to confirm it does it. for example:
+UNIT TESTING: method of testing the code, examples include using a "jasmine spy(mock)" A typical jasmine test starts by 
+
+first describing what is being tested, describe what it should do, then define the process to confirm it does it. for 
+
+example:
 	describe('the function', function() {
 		it('should do something', function() {
 			var variables = [array of variables here];
 			var function = function2(variables);
 			expect(function2).toEqual(result);
 
-FILTER: formats the value of an expression for display to the user. such as currency presenting the value in money. can chain filters as {{expression | filter1 | filter2 | filter3}}. filters can have arguments {{expression | filter:argument}} example {{ 12345 | number:2}} formats the number as 12,345.00 by specifying the filter type as "number" and then the fraction size as "2", the number is the amount of decimal points so 0 would return 12,345. Inject the number filter as a dependency as numberFilter (<filterName>Filter). filters can also be used in controllers, services, and directives. Filters are simililar to directives but are only concerned with data transformation.
+FILTER: formats the value of an expression for display to the user. such as currency presenting the value in money. can 
 
-DATA BINDING: whenever an input value changes, the value of the expressions are automatically recalculated and update the DOM accordingly. this is considered "live bindings". automatic synchronization of data between model and view components. first the template is compiled on the browser, this produces a live view. any changes to the view are immediately reflected in the model and changes in the model are propegated to the view. 
+chain filters as {{expression | filter1 | filter2 | filter3}}. filters can have arguments {{expression | 
 
-CONTROLLER: exposes variables and functionality to expressions and directives. A controller's job is to manipulate the scope. The recommended way of declaring Controllers is using array notation. 
+filter:argument}} example {{ 12345 | number:2}} formats the number as 12,345.00 by specifying the filter type as "number" 
+
+and then the fraction size as "2", the number is the amount of decimal points so 0 would return 12,345. Inject the number 
+
+filter as a dependency as numberFilter (<filterName>Filter). filters can also be used in controllers, services, and 
+
+directives. Filters are simililar to directives but are only concerned with data transformation. Filters applied directly 
+
+to the HTML will update every time something changes. 
+To use filters only when needed, they can be placed in a controller. example:
+	angular.module('filterInControllerModule',[])
+		.controller('filterController',['filterFilter', function(filterFilter) {
+			this.array = [num:1,num:2,num:3,num:4,num:5,num:6,num:7];
+			this.filteredArray = filterFilter(this.array, '2');
+	
+	<div ng-controller="filterController as ctrl">
+	the filter would display:
+	<span ng-repeat="entry in ctrl.filteredArray">{{entry.num}}</span>
+"entry in ctrl.filteredArray" is taking the value of the filteredArray in the filterController (filterController was 
+
+named ctrl by the ng-controller) then when {{entry.num}} was placed, entry was associated with "entry in 
+
+ctrl.filteredArray" which translated to array.num / object.key&value so entry in ctrl.filteredArray along with 
+
+{{entry.num}} basically means "present this data" filteredArray (entry, num) object.key renamed as array.num
+creating custom filters would first have a filterApp defined to hold all the custom filters
+	angular.module('myFilter',[])
+then define the filter's function
+		.filter('reverse', function() {
+the filterApp gets listed as a dependency in a controller
+	angular.module('myController', ['$scope', 'myFilter'
+the filter can then be used with expressions
+		{{expression | reverse }}
+
+DATA BINDING: whenever an input value changes, the value of the expressions are automatically recalculated and update the 
+
+DOM accordingly. this is considered "live bindings". automatic synchronization of data between model and view components. 
+
+first the template is compiled on the browser, this produces a live view. any changes to the view are immediately 
+
+reflected in the model and changes in the model are propegated to the view. 
+
+CONTROLLER: exposes variables and functionality to expressions and directives. A controller's job is to manipulate the 
+
+scope. The recommended way of declaring Controllers is using array notation. 
 -----example:
 	myModule.controller('myController',['$scope', 'dep1','dep2', function($scope, dep1, dep2) {
 		$scope.aMethod = function() {code here};}]);
-	where the controller is named myController and the array of dependencies and functions follow as $scope, dep1, 	dep2, function.....
-	while this is the preferred method to inject dependencies($scope, dep1, dep2) there are other methods such as 	$INJECT:
+	where the controller is named myController and the array of dependencies and functions follow as $scope, dep1, 	
+
+dep2, function.....
+	while this is the preferred method to inject dependencies($scope, dep1, dep2) there are other methods such as 	
+
+$INJECT:
 		var myController = function($scope, dep1, dep2) {code here};
 		myController.$inject = ['$scope','dep1','dep2'];
 		myModule.controller('myController', myController);
 		$inject must order the array the same way the var myController did.
-in angular a controller is defined by javascript constructor function that is used to augment the angular scope. when a controller is attached via ng-controller, a new controller object is instantiated and a new child scope is created and made available as an injectable parameter to the controller's constructor function as "$scope". if the controller has been attached using the "controller as" syntax, then the controller instance will be assigned to a property on the new scope. use controllers to set up the initial state of the $scope object and add behavor to the $scope. DO NOT use controllers to manipulate DOM, format input (use angular form controls instead), filter output(use angular filters instead), share code or state across controllers(use services), manage the life-cycle of other components(like creating service instances). .controller() keeps the controllers constructor function out of the global scope. controllers should only contain business logic for a single view. encapsulate work that doesnt belong in controllers into services and use services in controllers via DI. you can associate controllers with scope objects via ngController directive or $route service. Scopes interact with controllers in the following situations: 1)controllers use scopes to expose controller methods to templates. 2)controllers define methods that can mutate the model(properties of the scope) 3)controllers can register watches on the model. these watches execute immediately after the controller behavior executes.
+in angular a controller is defined by javascript constructor function that is used to augment the angular scope. when a 
 
-SCOPE: an object that refers to the application model. ng-app (owner of the root scope) has an ng-controller that creates an object(scope) to be used within it, the ng-controller creates a child scope to the root scope. it is an execution context for expressions. scopes mimic the DOM structure of the application. scopes can watch expressions and propegate events. {{username}} is meaningless unless it is evaluated against a specific scope which defines the username property. Attach methods to the $scope object to add behavior that reacts to events or executes computation in the view. any objects assigned to the scope become model properties. any methods assigned to the scope are available in the template/view and can be invoked via angular expressions and "ng" event handlers such as ngClick.
------controllers and directives have reference to the scope but not to each other, this isolates the controller from the directive as well as the DOM.
-scopes provide APIs ($watch) to observe model mutations. ($apply) to propagate any model changes through the system into the view from outside the "angular realm" (controllers, services, angular event handlers)
-scopes can be nested to limit access to the properties of application components while providing access to shared model properties.
+controller is attached via ng-controller, a new controller object is instantiated and a new child scope is created and 
+
+made available as an injectable parameter to the controller's constructor function as "$scope". if the controller has 
+
+been attached using the "controller as" syntax, then the controller instance will be assigned to a property on the new 
+
+scope. use controllers to set up the initial state of the $scope object and add behavor to the $scope. DO NOT use 
+
+controllers to manipulate DOM, format input (use angular form controls instead), filter output(use angular filters 
+
+instead), share code or state across controllers(use services), manage the life-cycle of other components(like creating 
+
+service instances). .controller() keeps the controllers constructor function out of the global scope. controllers should 
+
+only contain business logic for a single view. encapsulate work that doesnt belong in controllers into services and use 
+
+services in controllers via DI. you can associate controllers with scope objects via ngController directive or $route 
+
+service. Scopes interact with controllers in the following situations: 1)controllers use scopes to expose controller 
+
+methods to templates. 2)controllers define methods that can mutate the model(properties of the scope) 3)controllers can 
+
+register watches on the model. these watches execute immediately after the controller behavior executes.
+
+SCOPE: an object that refers to the application model. ng-app (owner of the root scope) has an ng-controller that creates 
+
+an object(scope) to be used within it, the ng-controller creates a child scope to the root scope. it is an execution 
+
+context for expressions. scopes mimic the DOM structure of the application. scopes can watch expressions and propegate 
+
+events. {{username}} is meaningless unless it is evaluated against a specific scope which defines the username property. 
+
+Attach methods to the $scope object to add behavior that reacts to events or executes computation in the view. any 
+
+objects assigned to the scope become model properties. any methods assigned to the scope are available in the 
+
+template/view and can be invoked via angular expressions and "ng" event handlers such as ngClick.
+-----controllers and directives have reference to the scope but not to each other, this isolates the controller from the 
+
+directive as well as the DOM.
+scopes provide APIs ($watch) to observe model mutations. ($apply) to propagate any model changes through the system into 
+
+the view from outside the "angular realm" (controllers, services, angular event handlers)
+scopes can be nested to limit access to the properties of application components while providing access to shared model 
+
+properties.
 
 -----myApp.controller('doubleController',['$scope',function($scope) {$scope.double=function(value){return value*2;};}]);
-	this code uses a controller to add a method which doubles a number to the scope. can display the result of this in the DOM by adding {{ double(num) }} to the element that the ng-controller is attached to. num would refer to the ng-model="num" that has been added within the same element such as <input ng-model="num">
+	this code uses a controller to add a method which doubles a number to the scope. can display the result of this 
+
+in the DOM by adding {{ double(num) }} to the element that the ng-controller is attached to. num would refer to the ng-
+
+model="num" that has been added within the same element such as <input ng-model="num">
 
 -----way to visualize scope in my head...
 	myApp.controller('spicyController', ['$scope',function($scope) {
@@ -91,7 +239,19 @@ scopes can be nested to limit access to the properties of application components
 			customSpice : "wasabi",
 			spice : 'very',
 			spicey : function(spice) { $scope.spice = spice; };
-	then when referring to the scope object in html, {{spice}} will take the value of $scope.spice which would initially be 'very', until the spicy() function is called. spicy() will use "spice" as a parameter to update the value of $scope.spice. The DOM had an input with an ng-model="customSpice" attached to it. the default here is "wasabi" defined in the controller. when user types in the input, it updates the value in the controller to that input for customSpice. then when user clicks on the button that has ng-click="spicy(customSpice)" it takes the value of custom spice and sends it to the spicy() function as the parameter to update $scope.spice with its value. this is then updated automatically to the {{spice}} within the element.
+	then when referring to the scope object in html, {{spice}} will take the value of $scope.spice which would 
+
+initially be 'very', until the spicy() function is called. spicy() will use "spice" as a parameter to update the value of 
+
+$scope.spice. The DOM had an input with an ng-model="customSpice" attached to it. the default here is "wasabi" defined in 
+
+the controller. when user types in the input, it updates the value in the controller to that input for customSpice. then 
+
+when user clicks on the button that has ng-click="spicy(customSpice)" it takes the value of custom spice and sends it to 
+
+the spicy() function as the parameter to update $scope.spice with its value. this is then updated automatically to the 
+
+{{spice}} within the element.
 
 -----Scope inheritance example:
 	<div ng-controller="grandfatherController">
@@ -101,22 +261,50 @@ scopes can be nested to limit access to the properties of application components
 		</div>
 	</div>
 
-	when defining controllers, the data from the $scope object gets passed to the child elements, unless the child elements update the value of $scope to something else. there will be a root scope, grandfatherController scope, fatherController scope which overrides grandfather and root, and sonController scope which overrides all ancestors.
+	when defining controllers, the data from the $scope object gets passed to the child elements, unless the child 
+
+elements update the value of $scope to something else. there will be a root scope, grandfatherController scope, 
+
+fatherController scope which overrides grandfather and root, and sonController scope which overrides all ancestors.
 	directives that create scopes example= ng-controller, ng-repeat. 
 scopes can be retrieved for any DOM element by typing angular.element(name of element).scope()
 
-$SCOPE: created automatically when ng-controller has been added to DOM and controller object has been created. you set up the initial state of the scope by attaching properties to the $scope object. the properties contain the view model(the model that will be presented by the view) all the $scope properties will be available to the template at the point where the controller is added.
+$SCOPE: created automatically when ng-controller has been added to DOM and controller object has been created. you set up 
+
+the initial state of the scope by attaching properties to the $scope object. the properties contain the view model(the 
+
+model that will be presented by the view) all the $scope properties will be available to the template at the point where 
+
+the controller is added.
 
 -----myApp.controller('GreetingController', ['$scope', function($scope) {
   	$scope.greeting = 'Hola!';	}]);
 	
-	in this example, an angular module called "myapp" was created with a controller called 	"greetingController" which then creates a 'child scope' called $scope. then defines "greeting" within this scope as containing a string "hola!". this string can now be applied to the DOM using {{greeting}} on any child elements within the element that "ng-controller="GreetingController" was attached to.
+	in this example, an angular module called "myapp" was created with a controller called 	"greetingController" 
 
-NESTED SCOPES: "child scopes" or "isolated scopes". child scopes inherit the properties of its parent scope. isolated scopes do not.
+which then creates a 'child scope' called $scope. then defines "greeting" within this scope as containing a string 
 
------each angular application has 1 root scope, but can have several child scopes. this happens when controllers, factories, etc.. are created they each can create child scopes within the app. when angular evaluates {{name}} it first looks at the scope associated with the given element for the name property. if it isnt found it goes to the parent element, and upwards to the root scope. this is called "prototypical inheritance"
+"hola!". this string can now be applied to the DOM using {{greeting}} on any child elements within the element that "ng-
 
------in the browser developer tools you can access the scope of an angular element by typing angular.element($0).scope() where element($0) refers to the index number of the element in angulars query. this can be found by right clicking on the element in the debugger and selecting "inspect element".
+controller="GreetingController" was attached to.
+
+NESTED SCOPES: "child scopes" or "isolated scopes". child scopes inherit the properties of its parent scope. isolated 
+
+scopes do not.
+
+-----each angular application has 1 root scope, but can have several child scopes. this happens when controllers, 
+
+factories, etc.. are created they each can create child scopes within the app. when angular evaluates {{name}} it first 
+
+looks at the scope associated with the given element for the name property. if it isnt found it goes to the parent 
+
+element, and upwards to the root scope. this is called "prototypical inheritance"
+
+-----in the browser developer tools you can access the scope of an angular element by typing angular.element($0).scope() 
+
+where element($0) refers to the index number of the element in angulars query. this can be found by right clicking on the 
+
+element in the debugger and selecting "inspect element".
 
 $ON(): listens on events, can catch the event displayed by $broadcast and $emit.
 	$scope.$on('MyEvent', function() {function code here})
@@ -127,33 +315,101 @@ $EMIT(): will make an event propegate upwards to the parent elements
 $BROADCAST(): will propagate the event downwards to the child elements
 	ng-click="$broadcast('MyEvent')"
 
-$ROUTE: used for deep-linking url's to controllers and views. it watches $location.url() and tries to map the path to an existing route definition. required "ngRoute". define routes through $routeProviders API. $route is used in conjuction with the ngView directive and $routeParams service.
+$ROUTE: used for deep-linking url's to controllers and views. it watches $location.url() and tries to map the path to an 
 
-$LOCATION: parses the url in the browser address bar and makes the url available to the application. changes to the address bar are reflected into the $location service and changes to the $location are reflected into the browser address bar.
+existing route definition. required "ngRoute". define routes through $routeProviders API. $route is used in conjuction 
 
-$APPLY: only model modifications which execute inside the $apply method will be properly accounted for by angular. for example, if a directive listens on the DOM events such as ng-click, it must evaluate the expression inside the $apply method. after that, $apply performs a $digest.
+with the ngView directive and $routeParams service.
 
-$DIGEST: inside a $digest phase, the scope examines all the $watch expressions and compares them with the previous value. this is done asynchronously meaning assignments such as $scope.username = "angular" will not immediately cause a $watch to be notified, instead the $watch is delayed until the $digest phase. This is desirable since it combines multiple model updates into the $watch notification as well as guarantees that during the $watch notification no other $watch is running. if $watch changes the value of the model, it will force additional $digest cycle.
+$LOCATION: parses the url in the browser address bar and makes the url available to the application. changes to the 
 
-$WATCH: allows the directives to be notified of property changes, which allows the directive to render the updated value of the DOM.
+address bar are reflected into the $location service and changes to the $location are reflected into the browser address 
 
------1)creation: the root scope is created with the ng-app by the $injector. some directives (controllers, factories) create new child scopes. 2)watcher registration: directives register $watch on the scope. these watches propagate model values to the DOM.3)model mutation: mutations should be made inside scope.$apply(). angular API's do this automatically, so its not needed when doing synchronous work in controllers or asynchronous work with $http, $timeout, or $interval services.4)mutation observation: at the end of $apply, angular performs a $digest cycle on the root scope which then propagates through all child scopes. during the $digest cycle all $watch expressions or functions are checked for model mutation and if a mutation is detected, the $watch listener is called.5)scope destruction: when child scopes are no longer need they are destroyed by the child scope creator with scope.$destroy(). this stops propagation of $digest calls into the child scope and allow for memory used by the child scope models to be reclaimed by the garbage collector
+bar.
 
-NG-CONTROLLER: tells angular that the new controller is responsible for the element with the directive(the ng-controller is the directive) and all of the element's children. the syntax "invoiceController as invoice" tells angular to instantiate the controller and save it in a variable (here called "invoice") in the current scope.
+$APPLY: only model modifications which execute inside the $apply method will be properly accounted for by angular. for 
 
-OBSERVER DIRECTIVES: such as {{expression}} register listeners using $watch(). this type of directive needs to be notified whenever the expression changes so that it can update the view
+example, if a directive listens on the DOM events such as ng-click, it must evaluate the expression inside the $apply 
 
-LISTENER DIRECTIVES: such as ng-click register a listener with the DOM. when the listener fires, the directive executes the associated expression and updates the view using the $apply() method.
+method. after that, $apply performs a $digest.
 
-INSTANTIATION: creation of an object/the creation of a real instance or particular realization of an abstraction or template such as a class of objects or a computer process. to instantiate is to create such an instance by defining one particular variation of object within a class, giving it a name, and locating it in some physical place.)
+$DIGEST: inside a $digest phase, the scope examines all the $watch expressions and compares them with the previous value. 
+
+this is done asynchronously meaning assignments such as $scope.username = "angular" will not immediately cause a $watch 
+
+to be notified, instead the $watch is delayed until the $digest phase. This is desirable since it combines multiple model 
+
+updates into the $watch notification as well as guarantees that during the $watch notification no other $watch is 
+
+running. if $watch changes the value of the model, it will force additional $digest cycle.
+
+$WATCH: allows the directives to be notified of property changes, which allows the directive to render the updated value 
+
+of the DOM.
+
+-----1)creation: the root scope is created with the ng-app by the $injector. some directives (controllers, factories) 
+
+create new child scopes. 2)watcher registration: directives register $watch on the scope. these watches propagate model 
+
+values to the DOM.3)model mutation: mutations should be made inside scope.$apply(). angular API's do this automatically, 
+
+so its not needed when doing synchronous work in controllers or asynchronous work with $http, $timeout, or $interval 
+
+services.4)mutation observation: at the end of $apply, angular performs a $digest cycle on the root scope which then 
+
+propagates through all child scopes. during the $digest cycle all $watch expressions or functions are checked for model 
+
+mutation and if a mutation is detected, the $watch listener is called.5)scope destruction: when child scopes are no 
+
+longer need they are destroyed by the child scope creator with scope.$destroy(). this stops propagation of $digest calls 
+
+into the child scope and allow for memory used by the child scope models to be reclaimed by the garbage collector
+
+NG-CONTROLLER: tells angular that the new controller is responsible for the element with the directive(the ng-controller 
+
+is the directive) and all of the element's children. the syntax "invoiceController as invoice" tells angular to 
+
+instantiate the controller and save it in a variable (here called "invoice") in the current scope.
+
+OBSERVER DIRECTIVES: such as {{expression}} register listeners using $watch(). this type of directive needs to be 
+
+notified whenever the expression changes so that it can update the view
+
+LISTENER DIRECTIVES: such as ng-click register a listener with the DOM. when the listener fires, the directive executes 
+
+the associated expression and updates the view using the $apply() method.
+
+INSTANTIATION: creation of an object/the creation of a real instance or particular realization of an abstraction or 
+
+template such as a class of objects or a computer process. to instantiate is to create such an instance by defining one 
+
+particular variation of object within a class, giving it a name, and locating it in some physical place.)
 
 NG-REPEAT: rotates through an array defined in the controller?
 
-NG-CLICK: specify the function to run when the button is clicked (ng-click="invoice.pay()") refers to the js code this.pay = function pay() {define function}
+NG-CLICK: specify the function to run when the button is clicked (ng-click="invoice.pay()") refers to the js code 
+
+this.pay = function pay() {define function}
 
 -----When the application grows it is a good practice to move view-independent logic from the controller into a service
 
-SERVICE: substitutable objects that are wired together using dependancy injection. Usually services are synced up to a server to maintain data and expose methods to push and pull data from the server. Can also use services to organize and share code across an app(resuable code defining common functions in a seperate file for the main file to refer to when needed) meaning multiple controllers for example could refer to the same service to share it's resources. to use an angular service, you add it as a dependency for the component(controller,service,filter,or directive)that depends on the service. $provide service is responsible for telling angular how to create new injectible things; these things are called services. services are defined by things called providers, which is what is being created when $provide is used. defining a provider is done via the provider method on the $provide service, which can be called by asking for it to be injected into an applications config function. 
+SERVICE: substitutable objects that are wired together using dependancy injection. Usually services are synced up to a 
+
+server to maintain data and expose methods to push and pull data from the server. Can also use services to organize and 
+
+share code across an app(resuable code defining common functions in a seperate file for the main file to refer to when 
+
+needed) meaning multiple controllers for example could refer to the same service to share it's resources. to use an 
+
+angular service, you add it as a dependency for the component(controller,service,filter,or directive)that depends on the 
+
+service. $provide service is responsible for telling angular how to create new injectible things; these things are called 
+
+services. services are defined by things called providers, which is what is being created when $provide is used. defining 
+
+a provider is done via the provider method on the $provide service, which can be called by asking for it to be injected 
+
+into an applications config function. 
 -----example:
 	myModule.config(function($provide) {
 	//angular, provide a new service called 'greeting'. $provide.provider will define 'greeting' as a function.
@@ -164,14 +420,22 @@ SERVICE: substitutable objects that are wired together using dependancy injectio
 				return function(name) {
 					alert("hello, " + name);
 	};};});});
-	here defined a provider for a service called greeting. greeting can be injected into injectable functions like controllers. angular will call the provider's $get function to return new instance of the service. here, the function with 'name' parameter is injected and alert a message with name.
------"factory" "provider" and "value" are shortcuts to define various parts of a provider. meaning the above example can be coded like this:
+	here defined a provider for a service called greeting. greeting can be injected into injectable functions like 
+
+controllers. angular will call the provider's $get function to return new instance of the service. here, the function 
+
+with 'name' parameter is injected and alert a message with name.
+-----"factory" "provider" and "value" are shortcuts to define various parts of a provider. meaning the above example can 
+
+be coded like this:
 	myModule.config(function($provide) {
 		$provide.factory('greeting', function() {
 			return function(name) {
 				alert("hello " + name);
 	};});});
-	$get is a factory function. there is no difference in results of the two versions. value can provide an even shorter version:
+	$get is a factory function. there is no difference in results of the two versions. value can provide an even 
+
+shorter version:
 	myModule.config(function($provide) {
 		$provide.value('greeting', function(name) {
 			alert("hello," + name);
@@ -182,7 +446,9 @@ SERVICE: substitutable objects that are wired together using dependancy injectio
 	myMod.factory("greeting",....);
 	myMod.value("greeting",....);
 	-Lazily instantiated=Angular only instantiates a service when an application component depends on it.
-	-singletons=each component dependent on a service gets a reference to the single instance generated by the service factory
+	-singletons=each component dependent on a service gets a reference to the single instance generated by the 
+
+service factory
 
 
 -----(ng-app="invoice2") refers to the angular module that contains a service(factory) in seperate js file. 
@@ -195,29 +461,49 @@ SERVICE: substitutable objects that are wired together using dependancy injectio
 	angular.module('invoice2', ['finance2'])
 	.controller('InvoiceController', ['currencyConverter', function(currencyConverter) {define function here}
 
-	this code snippet specifies that the invoice2 module depends on the finance2 module. by this, angular uses the invoiceController and currencyConverter service.
+	this code snippet specifies that the invoice2 module depends on the finance2 module. by this, angular uses the 
+
+invoiceController and currencyConverter service.
 
 CONTROLLER: module and controller code for the specific html app setup
 
-DEPENDENCY INJECTION (DI): software design pattern that deals with how objects and functions get created and how they get a hold of their dependencies. everything in angular is created and wired using dependency injection. its in charge of creating components, resolving their dependencies, and providing them to other components. can be used when defining components or when providing 'run' and 'config' in a module.
+DEPENDENCY INJECTION (DI): software design pattern that deals with how objects and functions get created and how they get 
+
+a hold of their dependencies. everything in angular is created and wired using dependency injection. its in charge of 
+
+creating components, resolving their dependencies, and providing them to other components. can be used when defining 
+
+components or when providing 'run' and 'config' in a module.
 
 $INJECTOR: used to retrieve object instances as defined by provider, instantiate types, invoke methods, and load modules.
 
-.CONFIG():specify a function that needs to be ran at configuration phase. only providers and constants can be injected into configuration blocks.
+.CONFIG():specify a function that needs to be ran at configuration phase. only providers and constants can be injected 
+
+into configuration blocks.
 -----example:
 	angular.module('myModule', [])
 	.config(['depProvider', function(depProvider) {function code here}])
 
-.RUN():specify function to run at run time. gets executed after the injector is created and is used to kickstart the app. only instances and constants can be injected in run blocks.
+.RUN():specify function to run at run time. gets executed after the injector is created and is used to kickstart the app. 
+
+only instances and constants can be injected in run blocks.
 -----example:
 	angular.module('myModule', [])
 	.run(['depService', function(depService) {function code here}]);
 
------When Angular starts, it will use the configuration of the module with the name defined by the ng-app directive, including the configuration of all modules that this module depends on.
+-----When Angular starts, it will use the configuration of the module with the name defined by the ng-app directive, 
 
-$HTTP: built-in service provided by angular for accessing a server backend. its a wrapper around "XMLHttpRequest" and JSONP transports.
+including the configuration of all modules that this module depends on.
 
------XMLHttpRequests is used to exchange data with a server behind the scenes. you can update a page without reloading the page, requests and recieve data from a server after the page is already loaded, and send data to a server in the background.
+$HTTP: built-in service provided by angular for accessing a server backend. its a wrapper around "XMLHttpRequest" and 
+
+JSONP transports.
+
+-----XMLHttpRequests is used to exchange data with a server behind the scenes. you can update a page without reloading 
+
+the page, requests and recieve data from a server after the page is already loaded, and send data to a server in the 
+
+background.
 	xmlhttp=new XMLHttpRequest();
 	xmlhttp.open("GET","books.xml",false);
 	xmlhttp.send();
@@ -225,4 +511,82 @@ $HTTP: built-in service provided by angular for accessing a server backend. its 
 
 $EVENT: directives like ngClick and ngFocus expose an $event object within the scope of that expression. 
 
-ONE-TIME BINDING: an expression that starts with :: is considered a one-time expressions. meaning it only processes once after the first digest phase. {{::name}} use this when the process only needs to occur once to free up resources. if the first process left the name undefined, then it will continue to watch until a process successfuly returns a value for name.
+ONE-TIME BINDING: an expression that starts with :: is considered a one-time expressions. meaning it only processes once 
+
+after the first digest phase. {{::name}} use this when the process only needs to occur once to free up resources. if the 
+
+first process left the name undefined, then it will continue to watch until a process successfuly returns a value for 
+
+name.
+
+FORMS: "input", "select", "textarea" controls are ways to enter data. A form is a collection of controls meant for 
+
+grouping related controls together. They provide validation services to notify the user of invalid input before 
+
+submitting a form. Server-sde validation is still necessary regardless of what forms can validate. 
+inputs will use ng-models to update the values within the controller, this synchronizes the model with the view, and ng-
+
+click to call functions for submitting and reseting the form.
+novalidate is used to disable the browser's default validation behavior
+	<form novalidate class="...
+ng-model wont update user.email unless the input of the user matches the form of an email, which is defined in <input 
+
+type="email" ....
+for styling with CSS, ng-model updates the form elements with classes
+	ng-valid: the model is valid
+	ng-invalid: the model is invalid
+	ng-valid-[key]: for each valid key added by $setValidity
+	ng-invalid-[key]: for each invalid key added by $setValidity
+	ng-pristine: the control hasn't been interacted with yet
+	ng-dirty: the control has been interacted with
+	ng-touched: the control has been blurred
+	ng-untouched: the control hasn't been blurred
+	ng-pending: any $asyncValidators are unfulfilled
+example defining it in CSS
+	.css-form input.ng-invalid.ng-touched {
+    		background-color: #FA787E;  }
+this would turn the form input element red after the user leaves focus on the element
+
+-----ng-show will show the element its attached to when a condition is met. here the div is shown if form has been 
+
+submitted or the name field has been focused and blurred. the child div is shown when the input with the element tagged 
+
+with "required" is invalid
+<div ng-show="form$submitted || form.uName.$touched">
+	<div ng-show="form.uName.$error.required">
+-----to take control of how the model and form validation update anytime content is changed, add ng-model in this format
+	ng-model-options="{updateOn: 'focus'} or multiple events ng-model-options="{updateOn: 'blur focus mousedown'}
+-----or delay the udpate with
+	ng-model-options="{debounce: 1000}" will delay by 1 second from the last time a change was made. meaning if i 
+
+repeatedly type faster than 1 second, the timer will keep resetting and the updates will not show until a full 1 second 
+
+has passed.
+-----example of combining event control and time delay
+	ng-model-options="{updateOn: 'focus mousedown', debounce: {focus: 1000, mousedown: 500} }"
+these attributes apply to the element and all child elements unless the child element applies a different attribute for 
+
+it. 
+along with HTML5 input types like email, date, number, text, angular provides directives for validation such as required, 
+
+pattern, min, max, minlength, maxlength. custom validation functions can be added with $validators on the controllers. 
+
+$validators functions get modeValue and viewValue as parameters, angular then returns true or false for valid and 
+
+invalid. ($asyncValidators handle asynchronous validation for server requests ($http) where 'resolved' or 'rejected' is 
+
+returned. $pending stores async validations that are still in progress)
+-----this span will show when the form element that has the ng-model "size" has an input that is not a number (fractions 
+
+will return false since the integer needs to be a whole number)
+	<span ng-show="form.size.$error.integer">
+-----this span will show when the value is less than 0 or greater than 10
+	<span ng-show="form.size.$error.min || form.size.$error.max">
+     integer as well as 0-10 range where defined in the input element:
+	<input type="number" ng-model="size" name="size" min="0" max="10" integer />
+default validators within angular can be overwritten by defining the control as a directive function. useful if the form 
+
+should require specif formats beyond the standard formats, such as an email address with a specif domain name, or phone 
+
+number with specific area code.
+form controls such as input, select, textarea, can also be overwritten in similar way
