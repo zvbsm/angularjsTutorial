@@ -30,15 +30,40 @@ information
 
 DIRECTIVES: apply special behavior to attributes or elements in the HTML. they are angular's way of bringing additional 
 
-functionality to HTML. Directives define how the view behaves. define the DOM manipulation within the directive and the 
+functionality to HTML. Directives define how the view behaves. examples of directives are ng-app, ng-controller, ng-
 
-app updates the view with the new data recieved from the directives. all DOM manipulation should be handled by 
+model, etc... define the DOM manipulation within the directive and the app updates the view with the new data recieved 
 
-directives, not controllers.
------custom attribute
-	<ul data-directivename></ul>
-     custom class name
-	<ul class="directivename"></ul>
+from the directives. all DOM manipulation should be handled by directives, not controllers.
+-----Types of Directives
+	Element Directive (directive is the element)
+		<product-description></product-description>
+	Attribute Directive (directive is appended to element)
+		<H1 product-description></H1>
+	Comment Directive (??? apparently good for testing)
+		<product-description></product-description>
+	Class Directive	(applied to an element's attribute)
+		<div class="product-description"></div>
+	
+CUSTOM DIRECTIVE: creating a custom directive to be used in an HTML page would look like this
+	<event-Item></event-Item>
+where <eventItem> is the custom directive that gets defined in a module like
+	.directive('eventItem', function() {
+		return {
+		//restrict tells angular if this should be used as an element
+			restrict: 'E', //E = element, C = class, A = attribute, M = comment
+		//alternate version is
+		//template: "<div>stuff</div>"
+			templateUrl: 'folder/eventItem.html',
+		//controller as ... : function(...     for named scope 
+			controller: function($scope) {
+				//code here
+				},
+			//
+				link: function ($scope, element, attrs) { }
+this would take the HTML file "eventItem.html" and apply it as an element within the DOM where <event-Item></event-Item> 
+
+is. angular converts the directive "eventItem" with a dash as <event-Item>. 
 
 MODULE: angular module is the app (ng-app) which contains controllers and factories
 
@@ -49,6 +74,9 @@ application. placed on the parent element that holds the section of the page tha
 <html ng-app="appName"> or just the parent element containing all elements that will use angular.
 
 NG-MODEL: directive that stores/updates the value of the input field into/from a variable
+example: <input type="test" ng-model="name"/> will create an empty view model with the proptery "name" which can then be 
+
+used in {{name}} to display the value of the property that was typed in the input
 
 -----in Angular, the only place where an application should access the DOM is within directives. This is important 
 
@@ -152,9 +180,13 @@ first the template is compiled on the browser, this produces a live view. any ch
 
 reflected in the model and changes in the model are propegated to the view. 
 
-CONTROLLER: exposes variables and functionality to expressions and directives. A controller's job is to manipulate the 
+CONTROLLER: A set of javascript functions bound to a scope. should not be used to manipulate the DOM, only use for 
 
-scope. The recommended way of declaring Controllers is using array notation. 
+business logic. exposes variables and functionality to expressions and directives. A controller's job is to manipulate 
+
+the scope. Add controller to a module whether the module is a master controller module or the app itself. The recommended 
+
+way of declaring Controllers is using array notation. 
 -----example:
 	myModule.controller('myController',['$scope', 'dep1','dep2', function($scope, dep1, dep2) {
 		$scope.aMethod = function() {code here};}]);
@@ -193,6 +225,37 @@ service. Scopes interact with controllers in the following situations: 1)control
 methods to templates. 2)controllers define methods that can mutate the model(properties of the scope) 3)controllers can 
 
 register watches on the model. these watches execute immediately after the controller behavior executes.
+
+CONTROLLER AS (this controller's reference name): When adding ng-controller="myController" as itself, the controller 
+
+would use $scope in defining variables. When adding ng-controller"myController as event" (where event is just a random 
+
+word to name the controller for referencing, it could be "myController as nav", "myController as Ctrl", any name at all) 
+
+the name assigned becomes the new reference to that controller. so $scope is no longer used, instead 'this' takes its 
+
+place to refer to 'this' controller's data. example:
+the HTML element would show
+	<div ng-controller="myController as Ctrl">
+		<ul>
+			<li>{{Ctrl.title}}</li>
+and the controller would look like
+	.controller('myController', [function() {
+		this.title = mainTitle.title;
+		this.menu = [...];
+instead of the HTML looking like
+	<div ng-controller="myController">
+		<ul>
+			<li>{{title}}</li>
+and controller as
+	.controller('myController', ['$scope', function($scope) {
+		$scope.title = mainTitle.title;
+		$scope.menu = [...];
+reason for doing this change would be so the controller's "this.title" refers only to this specific controller rather 
+
+than the overall $scope. $scope is the standard use, but the alternate can be used depending on the type of app being 
+
+developed when the method is needed.
 
 SCOPE: an object that refers to the application model. ng-app (owner of the root scope) has an ng-controller that creates 
 
@@ -320,6 +383,21 @@ $ROUTE: used for deep-linking url's to controllers and views. it watches $locati
 existing route definition. required "ngRoute". define routes through $routeProviders API. $route is used in conjuction 
 
 with the ngView directive and $routeParams service.
+
+NGROUTE: added as dependency in the app module, defined in .config as follows
+		//ngRoute added to access $routeProvider, should be configured before app starts running so its added to 
+
+the .config
+	angular.module('myApp', ['ngRoute'])
+		.config(['$routeProvider',
+			function($routeProvider) {
+				$routeProvider.
+					when('/contact', {
+						templateUrl: 'contact.html',
+						controller: 'ContactCtrl'
+					}).
+					otherwise({
+						redirectTo: '/' });
 
 $LOCATION: parses the url in the browser address bar and makes the url available to the application. changes to the 
 
