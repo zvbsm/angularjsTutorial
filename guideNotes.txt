@@ -98,11 +98,15 @@ for these variables accessible to expressions. cannot use conditionals, loops, o
 
 MODEL: values that are stored in variables on the scope within angular. 
 
-FACTORY: service factory function generates the single object or function that represents the service to the rest of the 
+FACTORY: "When declaring a factory as an injectable argument, you will be provided with the value that is returned by 
 
-application. the object or function returned by the service is injected into any component (controller, service, filter, 
+invoking the function reference passed to module.factory". service factory function generates the single object or 
 
-or directive) that specifies a dependency on the service. typically you register a service by using the module factory 
+function that represents the service to the rest of the application. the object or function returned by the service is 
+
+injected into any component (controller, service, filter, or directive) that specifies a dependency on the service. 
+
+typically you register a service by using the module factory 
 -----angular.module('myModule',[]);
 	myModule.factory('serviceID', function() {define the service here});
 this is not registering a service instance, but a factory function that will create this instance when its called.
@@ -119,7 +123,7 @@ Factory Methods include directives, services, or filters. the recommended way of
 	.directive('directiveName', ['depService', function(depService) {function code here}])
 	.filter('filterName', ['depService', function(depService) {function code here}]);
 
-$PROVIDE: a way to register a service instead of using module's "config" function.
+$PROVIDE: a way to register a service instead of using module's "config" function (different from module().provider() ).
 -----$provide.factory('serviceID', function(){code service function here});
 this technique is often used in unit tests to mock out a service's dependencies
 
@@ -255,19 +259,21 @@ reason for doing this change would be so the controller's "this.title" refers on
 
 than the overall $scope. $scope is the standard use, but the alternate can be used depending on the type of app being 
 
-developed when the method is needed.
+developed when the method is needed. When using "this" it now refers to the object that raised the event rather than the 
 
-SCOPE: an object that refers to the application model. ng-app (owner of the root scope) has an ng-controller that creates 
+controller.
 
-an object(scope) to be used within it, the ng-controller creates a child scope to the root scope. it is an execution 
+$SCOPE: an object that refers to the application model. ng-app (owner of the root scope) has an ng-controller that 
 
-context for expressions. scopes mimic the DOM structure of the application. scopes can watch expressions and propegate 
+creates an object(scope) to be used within it, the ng-controller creates a child scope to the root scope. it is an 
 
-events. {{username}} is meaningless unless it is evaluated against a specific scope which defines the username property. 
+execution context for expressions. scopes mimic the DOM structure of the application. scopes can watch expressions and 
 
-Attach methods to the $scope object to add behavior that reacts to events or executes computation in the view. any 
+propegate events. {{username}} is meaningless unless it is evaluated against a specific scope which defines the username 
 
-objects assigned to the scope become model properties. any methods assigned to the scope are available in the 
+property. Attach methods to the $scope object to add behavior that reacts to events or executes computation in the view. 
+
+any objects assigned to the scope become model properties. any methods assigned to the scope are available in the 
 
 template/view and can be invoked via angular expressions and "ng" event handlers such as ngClick.
 -----controllers and directives have reference to the scope but not to each other, this isolates the controller from the 
@@ -398,6 +404,7 @@ the .config
 					}).
 					otherwise({
 						redirectTo: '/' });
+this can then display the data retrieved to <ng-view></ng-view>
 
 $LOCATION: parses the url in the browser address bar and makes the url available to the application. changes to the 
 
@@ -471,23 +478,27 @@ this.pay = function pay() {define function}
 
 -----When the application grows it is a good practice to move view-independent logic from the controller into a service
 
-SERVICE: substitutable objects that are wired together using dependancy injection. Usually services are synced up to a 
+SERVICE: "when declaring a service as an injectable argument you will be provided with an instance of the function(new 
 
-server to maintain data and expose methods to push and pull data from the server. Can also use services to organize and 
+function(...))". ($http, $location, $window, etc.. are built-in services/providers within angular)substitutable objects 
 
-share code across an app(resuable code defining common functions in a seperate file for the main file to refer to when 
+that are wired together using dependancy injection. Usually services are synced up to a server to maintain data and 
 
-needed) meaning multiple controllers for example could refer to the same service to share it's resources. to use an 
+expose methods to push and pull data from the server. Can also use services to organize and share code across an app
 
-angular service, you add it as a dependency for the component(controller,service,filter,or directive)that depends on the 
+(resuable code defining common functions in a seperate file for the main file to refer to when needed) meaning multiple 
 
-service. $provide service is responsible for telling angular how to create new injectible things; these things are called 
+controllers for example could refer to the same service to share it's resources. to use an angular service, you add it as 
 
-services. services are defined by things called providers, which is what is being created when $provide is used. defining 
+a dependency for the component(controller,service,filter,or directive)that depends on the service. $provide service is 
 
-a provider is done via the provider method on the $provide service, which can be called by asking for it to be injected 
+responsible for telling angular how to create new injectible things; these things are called services. services are 
 
-into an applications config function. 
+defined by things called providers, which is what is being created when $provide is used. defining a provider is done via 
+
+the provider method on the $provide service, which can be called by asking for it to be injected into an applications 
+
+config function. 
 -----example:
 	myModule.config(function($provide) {
 	//angular, provide a new service called 'greeting'. $provide.provider will define 'greeting' as a function.
@@ -527,21 +538,30 @@ shorter version:
 	-singletons=each component dependent on a service gets a reference to the single instance generated by the 
 
 service factory
-
-
 -----(ng-app="invoice2") refers to the angular module that contains a service(factory) in seperate js file. 
 	angular.module('finance2', [])
 	.factory('currencyConverter', function() {
-
 	ng-app="invoice2" tells angular to use the invoice2 module as the main module for the application
-
 -----the currencyConverter is then called in the main angular file like this...
 	angular.module('invoice2', ['finance2'])
 	.controller('InvoiceController', ['currencyConverter', function(currencyConverter) {define function here}
-
 	this code snippet specifies that the invoice2 module depends on the finance2 module. by this, angular uses the 
 
 invoiceController and currencyConverter service.
+
+PROVIDER: "when declaring a provider as an injectable argument, you will be provided with ProviderFunction().$get(). The 
+
+constructor function is instantiated before the $get method is called - ProviderFunction is the function reference passed 
+
+to module.provider."
+	module.provider('providerName',function(){});
+providers can be configured during the module configuration phace ( .config() ).
+-----provide.value('key', 'value');
+provides a variable that has a value ( key = value )
+-----provide.factory('key', function(num) {
+	return num + 2;});
+provides variable that has a function that returns a value to the variable "key"
+
 
 CONTROLLER: module and controller code for the specific html app setup
 
