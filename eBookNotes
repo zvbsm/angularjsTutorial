@@ -1,0 +1,727 @@
+For testing: 
+	-download Karma test runner use 'npm install karma'
+which will create a new directory 'node_modules' in the current directory. 
+	-download jasmin library with 'npm install jasmine'
+	-download karma-chrome-launcher with 'npm install karma-chrom-launcher' (or 
+
+the one for the browser it will be tested in)
+	-for e2e tests install Protractor with 'npm install protractor'
+
+Running the unit tests:
+	-open test.bat in the scripts directory. this will start the karma server and 
+
+bring up the browser. 
+	-click the debug button in the browser.
+	-open web developer's tool and go to console
+	-console will display the results of the test
+
+Running end-to-end tests:
+	-start the test server
+	-open e2d-test.bat in the scripts directory
+	-the browser will open and the tests will run, then the results will be 
+
+displayed in the terminal
+
+MODULARIZATION BY LAYERS:
+controllers.js: to hold all ngControllers, for handeling business data between the 
+
+view and model
+directives.js: directives handle DOM manipulation. Includes animation effects. ng-
+
+controller, ng-app, ng-view, are all examples of directives. custom directives would 
+
+be stored in the directives.js source.
+filters.js: filters/custom filters for altering the way data is displayed
+services.js: 'gets' data and sends it to the controller. Used for CRUD and RESTful 
+
+situations
+
+MVC: model-view-controller is an architectural pattern that improves code organization 
+
+by promoting seperate of concerns. The view and model are seperated by the controller. 
+
+CONTROLLER: The controller handles inputs, delegates tasks, and coordinates with the 
+
+model and view. The controller shares data with the view via $scope. It attaches 
+
+models and functions to the $scope for the view to display the end result of.
+
+SERVICE: Holds repeatable code, functions, for processing data. The service would be 
+
+used to obtain information from a server (ex. $http) and inject this data into the 
+
+controller. The controller then applies the data on the $scope for the view to display 
+
+it.
+
+MODEL: represents the business data. the view is a projection of the model data. 
+
+VIEW: displays the data from the $scope which has been set by the controller
+
+UNIT TESTING: technique for testing sections of code. the unit is the smallest 
+
+testable part of the code. It's good practice to test each service, controller, 
+
+factory, etc... before moving on to the next step. 
+
+END-TO-END: testing method for a set of components. Checking to make sure when a set 
+
+of components are integrated together, they work as expected. Should be carried out 
+
+when use stories are being generated. (ex. test a user can enter username and 
+
+password, click login button, and is taken to the appropriate destination). End to end 
+
+tests take multiple unit tested code and tests them together so the overall process is 
+
+working as expected.
+
+Storing a module in a variable adds it to the javascript global scope. 
+	var myApp = angular.module('myApp',....
+this is bad practice since it is polluting the global scope unnecessarily. 
+If you call an angular.module multiple times with two arguments you are redefining the 
+
+dependency list, not retrieving an existing module.
+Can also use angular.module('moduleName') in a different source file to retrieve an 
+
+existing module and attach components to it.
+
+AS: Controller as firstCtrl or Controller as secondCtrl
+	<div ng-controller='Controller as firstCtrl'>
+		<div ng-controller='Controller as secondCtrl'>
+	firstResult={{firstCtrl.model}} 2ndResult={{secondCtrl.model}}
+
+$INJECT: holds an array of dependencies
+	Ctrl.$inject=['$scope','myService','myFactory'];
+there is better method to inject the dependencies by
+	angular.module('myApp',[]).controller('myCtrl',
+
+['$scope','myService','myFactory',function($scope,myService,myFactory) {}]);
+
+$SCOPE: created at the element level ng-app is applied
+	<div ng-app="myApp"> creates $scope
+	  <div ng-controller="myCtrl"> creates scope and enherits $scope
+	    <div ng-controller="myCtrl"> creates scope and enherits ^scope and $scope
+
+$NEW(): the $rootscope object has a function called $new() thats used to create child 
+
+scopes. Angular creates $rootscope at the point ng-app is added to an element. Each 
+
+time angular encounters ng-controller, it calls $rootScope.$new() to create a child 
+
+scope for the element that owns the ng-controller. The child scope enherits the 
+
+properties of the $rootscope. 
+-----example of prototypal enheritence:
+function car(color, steering) {
+	this.color=color;
+	this.steering=steering; }
+car.prototype.year=2012;
+var car=new Car('red','left');
+console.log(car.color); //prints color from car
+console.log(car.year); //returns year of Car.prototype
+console.log(car.hasOwnProperty('year')); //returns false
+
+can set prototype properties for the compiler to refer to when the values are not 
+
+found in the new object.
+
+RUN(): angular.module('myApp').run() is called when all modules are loaded.
+
+NG-BIND: using <h1 ng-bind="name"> instead of <h1>{{name}}<h1> works the same but will 
+
+prevent the browser from displaying the {{name}} for the split second it takes the 
+
+browser to load and process the angular script and replace {{name}} with the name 
+
+value.
+
+$WATCH(): a function in the $scope object used to register watchers. 
+	$scope.$watch('model',function(newValue,oldValue){
+		if(newValue!=oldValue) {
+			do this; };
+oldValue is optional, can use function(newValue) instead if only concerned with a new 
+
+value/not comparing to an old value.
+
+UNBINDWATCHER(): unbindWatcher is used to unbind the $watch when it is no longer 
+
+needed. this clears the memory alloted to the watcher.
+
+$WATCHCOLLECTION(): to watch an array or object of values.
+	$scope.$watchCollection('myCollection',function(newCollection,oldCollection){
+		do this; };
+$APPLY(): a function in the $scope object which takes a function as an argument. put 
+
+the code that changes models inside a function and call $scope.$apply
+
+(functionToBePassed). Angular sees model changes may have occured and triggers the 
+
+$rootScope.$digest() cycle. $apply() is done automatically by Angular unless code is 
+
+written in plain javascript and needs to manually call the function instead.
+
+$DIGEST(): digest always runs atleast twice (maximum of 10 times). This is to make 
+
+sure, if there where no changes in the first cycle, that everything is stable on the 
+
+second cycle. this is referred to as DIRTY CHECKING. automatically done by Angular 
+
+same as $apply, however $digest is also automatically called when $apply is used, so 
+
+it's far less likely to ever have to manually call $digest.
+
+$TIMEOUT: works like setTimeout() but does not require the use of $apply to trigger 
+
+the $apply and $digest cycle. $timeout automatically applies it. $timeout must be 
+
+added as a dependency to the controller.
+	angular.module('myApp',[]).controller('timeoutCtrl',function($scope,$timeout){
+	$scope.myFunction = function() {
+		$timeout(function() {
+			stuff;  }, 5000);
+
+$$: variables that start with double $ are internal variables and can be disregarded 
+
+since they are not meant to be used manually, it is automatically being handled by 
+
+Angular behind the scenes.
+
+$BROADCAST: propagates events downwards in the scope hierarchy.
+	$scope.$broadcast(name, args)
+scopes that want to get notified by the event should register listeneres for the event 
+
+name. $broadcast and $emit can have multiple arguments.broadcasting and emitting are 
+
+useful in a case where a controller may be waiting for data from a server, then needs 
+
+to broadcast or emit the event to other controllers so they can access the data as 
+
+well.
+
+$EMIT: propagates events upwards in the scope hierarchy. 
+	$scope.$emit(name, arguments)
+
+$ON: registers event listeners that triggers a handlerfunction when the event occurs.
+	$scope.$on(name, handlerFunction)
+as an event object, $on includes properties that give more info about the event (name, 
+
+targetScope, currentScope, stopPropagation, args) args meaning arguments that 
+
+represent data from the event that was broadcast or emitted
+	$scope.$broadcast('NO_DATA', 'No data');
+would broadcast an event called "NO_DATA" and sends the string 'No data' to be 
+
+displayed.
+	$scope.$on('NO_DATA', function(event, data) {
+	$scope.status = data; 
+	$scope.$emit('EVENT_RECEIVED');
+$on watches for the event 'NO_DATA' and runs a function that takes the event and it's 
+
+data to be used in updated the scope. This example assumes the controller with $on() 
+
+is the child of the controller with the $broadcast. If both controllers where childs 
+
+of a parent then $rootscope would be used and injected in both controllers. then 
+
+$rootscope would be used to broadcast the event. 
+	$rootScope.$broadcast()
+
+$DESTROY: cancels, timers and watchers, delete scopes, prevents $digest cycle from 
+
+processing anything involving the scope that's been destroyed.
+	$scope.$on('$destroy', function() {//clear timeout, clear watchers...}
+when the scope is destroyed it becomes 'garbage' which allows for the memory it was 
+
+taking to be reclaimed. this 'clean-up' involves clearing timeouts and removing 
+
+watchers and event listeners applied to the scope.
+
+$ROUTEPROVIDER: included in ngRoute which is downloaded seperately, then included in 
+
+the scripts on the HTML page. $routeProvider is passed in as parameter in function, 
+
+then defined with 'when' and 'otherwise' to specify the controller and templateUrl to 
+
+use for each view.
+	angular.module('myApp').config('function($routeProvider) {
+	  $routeProvider.when('/1stView', {
+	    controller: 'myCtrl',
+	    templateUrl: 'views/page1.html',
+		      }).when('/2ndView', {
+	    controller: 'myCtrl2',
+	    templateUrl: 'views/page2.html',
+		      }).otherwise({
+	    redirectTo:'/1stView' });
+$provider is used in .config() to initiate when the app starts on page load.
+the HTML would use a hashtag for each link (called hashbang)
+	<a href="#/index.html"></a>
+
+NG-VIEW: used as part of ng-route for specifying where to display the data definined 
+
+in $routeProvider. can be applied by itself or as part of any element. by itself is 
+
+not compatible with internet explorer.
+	<ng-view></ng-view>  or  <div ng-view></div>
+there should only be one ng-view on the page
+with ngroutes, the url in the browser will display a hashtag when loading different 
+
+routes index.html#/1stView referred to as hashbang. there is also html5Mode which is 
+
+used with $locationProvider
+
+$LOCATIONPROVIDER: injected to use html5Mode
+	angular.module('myApp').config(function($routeProvider, $locationProvider){
+	  $routeProvider.when('/1stView',{
+	    controller: 'Ctrl1',
+	    templateUrl:'1stView.html'})
+	$locationProvider.html5Mode(true); //to activate
+instead of a hashtag in the HTML link, the format would appear as
+	<a href="/1stView"></a>
+html5Mode uses HTML5's pushState API. This uses window.history.back() and 
+
+window.history.forward() which act the same as a user pressing the forward or back 
+
+button when navigating the page.
+	window.history.go(-3) is like hitting the back button 3 times
+	window.history.go(4)
+
+$ROUTEPARAMS: used for passing parameters to a controller associated with a view.
+	.when('/1stView/:firstname/:id', {...
+this passes the firstname and id as parameters to .when(). 
+-----the / at the start of the url tells angular that the template 
+
+partials/1stView.html is the root directory. using partials/1stView/:firstname/:id 
+
+would result in a 404 error
+	angular.module('myApp.ctrls',[])
+	  .controller('myCtrl',function($scope,$location){
+	    $scope.load2ndView=function(){
+	      $location.path('/2ndView/'+$scope.firstname+'/'+$scope.id);}
+	  .controller('myCtrl2',function($scope,$routeParams){
+	    $scope.firstname=$routeParams.firstname;
+	    $scope.id=$routeParams.id;
+myCtrl declares $location as dependency which parses the Url in the browser's address 
+
+bar and exposes it to the app. $location.path is used to load a new route. myCtrl2 
+
+declares $routeParams as dependency to expose route parameters to the controller. this 
+
+passes the information filled in the 1stView to the 2ndView to be displayed or used 
+
+however.
+
+NG-TEMPLATE: define templates inline. 
+	<script type="text/ng-template" id="/2ndview.tpl">
+	  <div><ul><li>{{firstname}}</li></ul></div>
+	</script>
+loads everything contained in the <script> element to $templateCache service to be 
+
+used by ng-view.
+	$routeProvider.when('/1stView',{
+	  controller:'myCtrl',
+	  templateUrl:'/1stView.tpl'
+url refers to the id set in the <script> element. the .tpl extension is optional, the 
+
+id can be named anything and is used in this example to easily identify the url with 
+
+this format type.
+
+RESOLVE: a property in the route config object which can be used to pass dependencies 
+
+to the controller. resolve retrieves data like an AJAX call. 
+	templateUrl: '/1stView.html',
+	resolve: {code to retrieve data from server}
+Angular executes the function within resolve before instantiating the controller, 
+
+which is then used as the value for the names dependency in the controller.
+
+PROMISE: a 'deferred type' function, meaning the returned value is a placeholder for 
+
+the actual value that will be available later. 
+-----example would be making an AJAX call to retrieve a blog post by its ID, can use 
+
+resolve to get the post object, the function returns a 'promise' and the resolve 
+
+automatically updates when the actual post arrives. before the route change ends, all 
+
+the dependencies listed in resolve should be resolved or rejected. the dependency 
+
+would be rejected in the case that the network connection fails and the dependency 
+
+fails to retrieve the data it needs. if all dependencies are resolved, a 
+
+$routeChangeSuccess event is broadcasted. otherwise a $routeChangeError is 
+
+broadcasted. $rootScope.$on() could be registered to listen for these events if 
+
+desired.
+
+$LOCATION: exposes and syncs the url. changes to $location update the url and url 
+
+changes update $location. used for navigating or watching for changes. $location 
+
+doesn't trigger a full page refresh, only updates the browser url. provides getters 
+
+for parts of url such as host, port, protocol and setters for has,search, and paths. 
+
+PATH(): comes after the hostname and protocol such as /1stView or /2ndView in 
+
+https://www.com:8080/1stView
+	$location.path()
+gets the path
+	$location.path('/1stView');
+sets the path
+applying these to angular handlers such as ng-click, ng-model, automatically updates 
+
+the path since the functions are wrapped in $apply() and $digest() cycles. if applied 
+
+to custom event handlers or outside of angularJS, then $scope.apply() is required 
+
+after calling $location.path()
+
+$WINDOW.LOCATION.HREF: used to redirect the user to a different url
+
+SEARCH(): allows key/value pairs to be passed as search parameters to the url. instead 
+
+of $routeParams, search() can be used. the key/values will have ? as prefic and & as 
+
+separator.
+	http..../1stView?firstname=name&id=id
+
+HASH(): get or set the hash part of a url
+	%location.hash()
+get hash (#sec1, #sec2)
+	$location.hash('sec2')
+sets url to /1stView#sec2
+
+-----$location.path('/1stView').search({key:value}).hash('sec1')
+	hash() search() path() type functions can be chainable in $location
+
+HOST(): returns host name (ex: localhost)
+
+PORT(): returns port the server is listening on
+
+protocol(): returns http/https etc...
+
+url(): returns url after hostname and protocol (ex: /1stView/...)
+
+ABSURL(): returns entire url
+
+REPLACE(): navigating the path automatically adds to the history, replace prevents 
+
+this from happening by replacing the last entry in history rather than adding to it.
+	$location.replace();
+
+$LOCATIONCHANGESTART: broadcasts on the $rootScope before the url changes from 
+
+$location setters
+
+$LOCATIONCHANGESUCCESS: broadcasts after url changes. wont trigger if an event 
+
+listener with preventDefault is applied to it.
+
+$ROUTECHANGESTART: broadcasts before the route changes. while resolve is processing, 
+
+this can be used with a listener to display a loading image or progress bar in the 
+
+listener.
+
+$ROUTECHANGESUCCESS: broadcasts after resolve completes with sucess on all 
+
+dependencies. could be used to disable the listener that was triggered from 
+
+$routeChangeStart.
+
+$ROOTCHANGEERROR: broadcasts when resolve rejects a dependency (network failure, 
+
+etc...)
+
+NG-INCLUDE: can be used to apply fragments of HTML in the main page such as headers, 
+
+footers, sidebars, etc...
+	<div class="container">
+		<div ng-include="'/pieces/navBar.html'"></div>
+	</div>
+can also use ng-include by itself (keep in mind IE doesn't understand this)
+	<ng-include src="'/pieces/navBar.html'"></ng-include>
+
+UI ROUTER: 3rd party routing module. offers nested views support (ng-view). d/l and 
+
+add to scripts. then added to app as dependency
+	angular.module('myApp',['ui.router'...
+than apply $stateProvider and $urlRouterProvider in .config()
+	angular.module('myApp').config(function($stateProvider,$urlRouterProvider,
+
+$locationProvider){
+	  $stateProvider.state('1stView',{
+	    url: '/1stView',
+	    controller: 'myCtrl1',
+	    templateUrl: '/pieces/1stView.html'})
+	    .state('2ndView'...
+	    ...
+	    $urlRouterProvider.otherwise('/1stView');
+where 1stView and 2ndView are states rather than urls. the state is registered with 
+
+state() where the first argument represents the state name. 
+	<a ui-sref="1stView"></a>
+the link refers to ui-sref instead of a-href in this setting. focused on changing the 
+
+state rather than the url. 
+	.controller('myCtrl1',function($scope,$location,$state){
+	  $scope.load2ndView=function(){
+	    $state.go('2ndView',{...
+$state gets declared as a dependency in the controller, replaces $location.path(). 
+
+GO(): $state.go() activates a new state and makes the transition.
+	.go('stateName','stateParams') 
+$stateParams acts as $routeParams
+	.controller('myCtrl2',function($scope,$stateParams,someData){
+	  $scope.firstname=$stateParams.firstname;
+
+Services,Providers, and Factories are "injectable types" meaning they are injected 
+
+into controllers and other services via dependency injection. value and constant are 2 
+
+other injectable types.
+
+SERVICE: contains specific business logic to be used and reused by other services and 
+
+controllers. example of using a service would be to store login information to be 
+
+referred to through out the session. $http and $timeout are 2 built-in services 
+
+provided by angularJS. 
+	.service('mySrvc',function(){...
+creates a custom service called mySrvc
+	.controller('myCtrl1',function(mySrvc){
+	  mySrvc.myFunction();
+services can have other services as dependencies
+	.service('mySrvc',function($timeout){
+	  this.myVar=function(name){
+	    $timeout(function(){
+	      alert('hey'+name);}5000);
+this would then be used by the controller
+	.controller('myCtrl1',function(mySrvc){
+	  mySrvc.myVar('bob');
+services can be loaded earlier than when they would be needed by including in 
+
+module.run(). 
+	angular.module('myApp').run(function(mySrvc){...
+
+FACTORY: angular invokes the factory function and injects the value it returns. this 
+
+value can be a function,value, or object.
+-----example of factory returning functions
+	.factory('myFactory',function($http){
+	  return{
+	    addNote: function(note){...},
+	    updateNote: function(note){...},
+	    getNotes: function(){...}
+factory returns an object of functions. unlike services which only pass a constructor 
+
+function to service().
+
+PROVIDER: most configurable of the service types. acts as a provider of 
+
+service.Angular automatically creates a provider for every service created. can be 
+
+injected to .config() to initiate before the app starts.
+	.provider('greet',function() {
+	  this.greeting='hi';
+	  this.$get=function(){
+	    var greeting=this.greeting;
+	    return function(name) {
+	      alert(greeting+','+name);
+	    }
+	  }
+	  this.setGreeting=function(greeting){
+	    this.greeting=greeting;}
+must have an instance method called $get() in order for provider to work.
+	.config(function(greetProvider){
+	  greetProvider.setGreeting('hello');
+configures the greet to say hello
+	.controller('TestCtrl',function(greet){
+	  greet('bob');
+uses the greet service
+providers can only be injected inside .config() however angular automatically 
+
+instantiates providers when the module loads. only refer to the provider in .config() 
+
+when you want to configure it after the app has been loaded.
+
+VALUE: used to register a service (simple services that provide function, object, 
+
+number, string)
+	angular.module('myApp').value('appVersion','1.5');
+makes the app version accessible by any controllers, services, etc... by adding it as 
+
+a depenedency. value() cant be used in .config(). 
+
+CONSTANT: same as value but can be used in .config().
+	angular.module('myApp').constant('data','string');
+
+DECORATOR: intercepts creation of a service and modifies its default behavior. can 
+
+attach new function or properties to the original service. is placed in config().
+	angular.module('myApp').config(function($provide){
+	  $provide.decorator('$log',function($delegate){
+	    $delegate.postInfoToUrl=function(message){
+	      $delegate.log('Data to post:'+message);
+	      $delegate.log('Sending data to server');
+	    }return $delegate;
+$log now has the function postInfoToUrl() attached to it. values can be decorated, 
+
+constants can't.
+
+$LOG: logs messages to the console. methods for $log includes log(), info(), debug(), 
+
+warn(), and error(). 
+
+UNIT TESTING: example of a unit test for postService.getAll(), should return 4 post 
+
+objects
+	describe('the test',function(){
+	  beforeEach(module('blog.posts.services'));
+	  it('should return 4 posts',
+	    inject(function(postService){
+	      expect(postService.getAll().length).toBe(4);}));
+
+DESCRIBE(): a test suite which groups a set of related tests. 
+
+IT(): a single test within the describe() test suite.
+
+BEFOREEACH() injects any necessary modules that the test within the it() will use
+
+EXPECT(): is the value to be checked
+
+TOBE(): takes the expected value and compares it with the actual result. 
+
+END TO END TEST: example of e2e test when user navigates to url, the state loads and 
+
+all 4 posts are visible. when the first post is clicked, the new route with url laods
+	describe('the e2e test',function(){
+	  browser.get('/');
+	  protractor=protractor.getInstance();
+	  it('should have 4 posts',function() {
+	    var posts=element.all(by.repeater('post in posts'));
+	    expect(posts.count()).toBe(4); });
+	  it('should redirect to /url/url/.url',function(){
+	    var posts=element.all(by.repeater('post in posts'));
+	    posts.first().then(function(postElem){
+	      postElem.findElement(by.tagName('a')).then(function(a){
+	        a.click();
+	        expect(protractor.getCurrentUrl()).toMatch('/url/url/.url');
+browser.get() gets the HTML page for the test
+element.all(by.repeater('post in posts')) returns the number of elements present
+posts.first() grabs first element in posts, pass callback to posts.first().then() 
+
+which called by protractor with the first element as an argument
+findElement() and by.tagName() select element by its tag name
+a.click() clicks the link to verify the page it goes to updates correctly
+
+FORM: angular provides a form API that allows binding form controls to scope models 
+
+and easy validation. 
+	<input type="text" name="title" ng-model="book.title"/>
+	<textarea name="summary" ng-model="book.summary"></textarea>
+
+SELECT: an option within select will have its value passed to the object automatically
+	<select name="catagory" ng-model="book.catagory">
+	  <option value="SF">Science Fiction</option>
+	  <option value="Cmdy">Comedy</option>
+	  <option value="Fntsy">Fantasy</option>
+	</select>
+Initially angular will add an empty option along with the listed options, this can be 
+
+replaced by adding an option with empty value.
+	<option value="">Select an option</option>
+
+NG-OPTIONS: when a service gets info from the server that should be used to populate 
+
+the options, use ng-options to get the data from the service
+	<select name="catagory" ng-model="book.catagory" ng-model="catagory.id as 
+
+catagory.desc for book in books"></select>
+this will pull up the book in the books object, get the catagory by its id and present 
+
+it as the catagory description
+
+RADIO BUTTON CONTROL: take a selection of radio buttons and make only 1 selectable out 
+
+of the group. store an array in the script, then html will have
+	<input type="radio" ng-model="user.choice" value="1"/>
+	<input type="radio" ng-model="user.choice" value="2"/>
+the group of radio buttons all get bound to the same ng-model
+
+CHECKBOX CONTROL: by default if checked = true, if unchecked = false
+	<input type="checkbox" ng-model="user.choice"/>
+or can set a custome value for true or false instead
+	<input type="checkbox" ng-model="user.choice" ng-true-value="yes" ng-false-
+
+value="no"/>
+
+FORM: <form> element is an angularjs directive. instantiates FormController which 
+
+keeps track of child controls and their states such as valid or invalid. if a name is 
+
+given to a form element, the FormController is published to the scope within that 
+
+name. ng-ModelController has the same effect when a name is given. Angular offers 
+
+built-in directives for validation.
+
+NG-MAXLENGTH: max amount of characters allowed in field
+	<input ... ng-maxlength="21">
+NG-MINLENGTH
+	form.name.$error.minlength
+
+NG-REQUIRED: field is required
+	<input ... ng-required="true">
+	<ng-show="form.firstname.$error.required">
+will show the element if the firstname input returns an error
+	form.name.$error.required
+
+NG-PATTERN: validates field against regular expression
+	<input name="phoneNumber" ng-pattern="/^\d{10}$/"/>
+verifies input contains a 10 digit number
+	form.name.$error.pattern
+to show the error only after the form has been interacted with by the user add $dirty
+	<ng-show="form.name.$dirty && form.name.$error.required">
+
+NG-MODELCONTROLLER: validates field or format, parses field state, track and values.
+
+$PRISTINE: true when user hasn't interacted with the element
+
+$DIRTY: opposite of pristine
+
+$VALID: true when all elements on the form are valid
+
+$INVALID: true when atleast one element is invalid
+	<ng-show="form.number.$dirty && form.number.$invalid">
+
+VALIDATION CLASSES: when these statuses are present (valid,invalid,dirty,pristine) 
+
+they are added to the element as a class as well. these classes can be referred to by 
+
+CSS to apply css to it
+	input.ng-dirty.ng-invalid{
+	  border-color: red;}
+	.error-message{
+	  color: red;}
+
+NOVALIDATE: disables the default validation behavior of HTML5
+	<form name="thisForm" novalidate>
+
+NG-SUBMIT: attaches to the form to submit the info to the server
+	<form ng-submit="saveForm()">
+	<input type="submit" value="save"/>
+form holds ng-submit with the function to be called when the button is clicked. input 
+
+type submit sends the value save to the function and triggers the submit
+	$scope.saveForm=function() {
+	  if($scope.form.$valid)
+	    save code here
+	  else
+	    alert('invalid');
+
