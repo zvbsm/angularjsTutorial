@@ -725,3 +725,221 @@ type submit sends the value save to the function and triggers the submit
 	  else
 	    alert('invalid');
 
+NG-FORM: will group all elements within it to be part of the form. only to be used for 
+
+checking their validity, not a replacement to <form>. angular will validate input and 
+
+ouput controls for elements nested in ng-form. this is because Angular creates a 
+
+FormController for the elements in ng-form.
+
+NG-MODEL-OPTIONS: updates the model when a specific event occurs
+	<input type="text" ng-model="name" ng-model-options="{updateOn: 'blur'}"/>
+	"{updateOn: 'focus mousedown'}"
+can also keep the original behavior and add specifics to it
+	<input ... ng-model-options="{updateOn: 'default blur mousedown'}"/>
+debounce adds a delay so the model is not updated immediately
+	{updateOn: 'blur', debounce:200}"
+debounce can be applied to multiple events in a single ng-model-options
+	{updateOn: 'blur', debounce:{default: 1000, blur:2000}}
+
+$HTTP: performs CRUD operations. angulars way of using XMLHttpRequest to communicate 
+
+with servers. must be injected into the controller or service. great flexibility 
+
+however should use $resource for more abstractions, is based on $http and best suited 
+
+for CRUD apps, RESTful APIs.
+	.service('mySrvc',function($http){
+	  this.getData=function(){
+	    return $http({method:'GET',url:'/index'});
+this will return a promise which means .then() can be attached, then pass 
+
+success/error callbacks. 
+this service would then be called by the controller via DI
+	.controller('myCtrl',function($scope, mySrvc){
+	  $scope.getData=function(){
+	    mySrvc.getData().then(function(data,status,config){
+	      console.log('response: ' +data);},
+	    function(data,status,config){
+	      console.log('error');
+or can use success() and error()
+	mySrvc.getData().success(function(data,status,config){
+	  console.log(...
+	}).error(data,status,config){
+	  console.log(...
+success() and error() accept these parameters
+	data: response from server
+	status: HTTP status code such as 404, 200, etc... returned from server
+	config: config object used to generate the request
+	headers: map containing headers sent by server
+	statusText: status text for the HTTP status code, such as 'OK' for 200
+$http.get(url)
+$http.post(url,data)
+$http.put(url,data)
+$http.delete(url)
+$http.head(url)
+these can also use 'config' as parameter to configure parts of the request
+
+CONFIG: properties used in config object are
+	url: address the request will be made to. may be relative or absolute. should 
+
+be from own domain for $http to work. to use other url's CORS must be enabled, meaning 
+
+the other server must specify own domain is allowed to interact with it by setting a 
+
+header called Access-Control-Allow-Origin.
+	method: the request method GET,POST,PUT,DELETE
+	data: when using POST or PUT, data can be send with the request, this is 
+
+configured in the data property of the config object. can be a string or object. the 
+
+data will be serialized to a JSON string before getting sent
+	headers: for configuring headers. key is header name, value is header value
+	params: when making a GET request, can send query parameters such as ?
+
+key1=value1&key2=value2
+
+$RESOURCE: similar to $http but is best for REST APIs. built on $http with higher 
+
+level of abstraction. while $http is included with angular, $resource must be 
+
+downloaded seperately as angular-resource.js and declared as dependency since 
+
+$resource is defined in the ngResource module.
+	angular.module('myApp',['ngResource']);
+then use resource in a service
+	angular.module('myApp').factory('myService', function($resource){
+	  return $resource('url/:id');
+requires full endpoint URL. $resource has five default methods
+get()
+query(): issues GET request and returns empty array, the array is populated when the 
+
+data arrives from the server.
+save(): issues POST request. first argument is the POST body, second argument is the 
+
+callback which is called when the data is saved
+remove(): and delete() issue a DELETE request to the full endpoint url. use remove to 
+
+ensure compatibility with IE
+delete()
+
+PROMISE: promise objects take the place of a value that isn't available yet, and is 
+
+intended to be available later. If the value never becomes available, the promise is 
+
+rejected with an error. promise objects also expose methods that allow for callbacks 
+
+to be made for when the server request is resolved or rejected. promises can be 
+
+composed through chaining, so a task can be trigerred only after previous promise has 
+
+been resolved. 
+	promise.then(function(message){
+	  return otherPromise();})
+	.then(function(message){
+	    console.log(message);});
+first .then() calls another promise, the second .then() waits for the other promise to 
+
+resolve/reject.
+	function getPromise(){
+	  return $q.reject('reason');
+this will cause the promise to always get rejected.
+
+$Q:  an angular built-in service that allows for creating and using promises.
+	function getPromise() {
+	  var deferred=$q.defer(); 
+creates a deferred object
+	  doAsyncTask(function(err,data){
+	    if(err) {
+	      deferred.reject('Promise Rejected');}
+	    else {
+	      deffered.resolve('Promise Resolved');}
+	});
+	  return deferred.promise;
+return the promise associated with the deferred object
+this creates a new deferred object associated with a promise instance. doAsyncTask() 
+
+is a stand-in function to this example, to act as a function that performs a task 
+
+asynchronously. this would be where an AJAX call or $timeout would be made. when the 
+
+result is available, deferred.resolve() would be called to resolve the promise. or an 
+
+error message could be displayed if rejected with deferred.reject(). the example here 
+
+is returned immediately with deferred.promise so the promise instance is returned to 
+
+the caller.
+	function showResult(){
+	  var promise=getPromise();
+	  promise.then(function(message){
+	    console.log('promise resolved with message: '+message);},
+	    function(message){
+	      console.log('promise rejected with message: '+message);});
+getPromise() returns a promise instance.
+.then() takes three callbacks
+	promise.then(successCallback,failureCallback,notifyCallback);
+successCallback represents the value of deferred.resolve()
+failureCallback represents the value of deferred.reject()
+notifyCallback indicates the progress of the operation and can be called several 
+
+times.
+its optional to have success and failure callbacks but considered good practice to 
+
+have both for notifying of both results from the operation.
+a promise that hasn't been resolved or rejected remains in a pending state. promises 
+
+are only resolved/rejected once, if a promise has already been resolved and then more 
+
+callbacks are passed to then(), the success will be called. meaning, after the first 
+
+time, the promise resolve/reject step will be ignored.
+	.controller('myCtrl',['$scope','$q','$interval',function($scope,$q,$interval)
+could then add the $q code and then use interval to wait an amount of time for the 
+
+server to respond, if nothing happens by the time interval finishes counting, resolve 
+
+or reject the promise. interval would count and each step along the way notify the 
+
+client of the progress.
+
+FINALLY(): promise.finally(callback) method can be used for tasks regardless of 
+
+whether a promise has been rejected or resolved. this includes cleanups and reclaiming 
+
+resources.
+
+CACHE: cache the response obtained from the server. defined in the config object. set 
+
+to true means the first request is sent to the server. any other request afterwards to 
+
+the same server is served from the cache without reaching the server. 
+	return $http.get('http://...'+query,{cache:true});
+the cached response is stored locally in $cacheFactory service. the cached data is 
+
+erased when the browser is refreshed, can use localStorage to save it from page 
+
+refresh.
+
+INTERCEPTOR: interceptors process data before its sent or recieved to/from a server 
+
+(error handling, authentication, etc...). the two types of interceptors are REQUEST 
+
+and RESPONSE which are written as factory methods
+	.factory('myInterceptor',function($q,dep1,...){//interceptor code}
+after defining the interceptors, they would then be pushed to the list of interceptors 
+
+in config object
+	angular.module('myApp').config(function($httpProvider){
+	  $httpProvider.interceptors.push('myInterceptor');})
+
+.EXPECTGET(): for unit testing. allows for defining a response to send when a GET 
+
+request is made. ensures the test will fail if a GET request is not made in a 
+
+subsequent it() block. when writing multiple expectGET(), their order matters. the 
+
+requests in the it() block should be made in that order. if not concerned with whether 
+
+or not the request is made, use $httpBackend.whenGET()
