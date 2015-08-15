@@ -943,3 +943,104 @@ subsequent it() block. when writing multiple expectGET(), their order matters. t
 requests in the it() block should be made in that order. if not concerned with whether 
 
 or not the request is made, use $httpBackend.whenGET()
+
+DIRECTIVE: attaches special behavior to the DOM elements. ng-repeat, ng-show, ng-hide, 
+
+etc... directives come in four different forms.
+	element: <quantity-select></quantity-select>
+	attribute: <input type="text" quantity-select/>
+	class: <input type="text" class="quantity-select"/>
+	comment: <!--directive:quantity-select-->
+element and attribute are the preferred methods. 
+	.directive('customDirective',function(){
+	  return{
+	    restrict: 'AEC',
+	    replace: true,
+	    template: '<h3>this is the custom directive</h3>'};
+restrict: 'AEC', the directive can be used as an attribute, new HTML, class, or 
+
+element. could be 'ACE', 'CAE', etc... A=attribute, E=element, C=class
+template: other than a string, template could also be other directives, expressions 
+
+with {{}}, etc... Preferred way is to create a template in a seperate HTML file and 
+
+then use templateUrl to point to it. 
+	templateUrl: 'section4.html'
+replace: specifies the template will replace the HTML element that the directive is 
+
+applied to. 
+	<custom-directive></custom-directive>
+would be replaced with 
+	<h3>this is the custom directive</h3>
+if set to false, the template will be added as child element to it instead.
+when the template uses expressions, the expressions need to be binded to the correct 
+
+scope to work properly. this is done with 'link' function in the directive definition 
+
+object.
+	templateUrl: 'pageTwo.html',
+	link: function(scope, elem, attrs){
+	  scope.$watch('message',function(value){
+		//$watch set so the template knows when the message has changed
+	    console.log('...
+allows to set models and watchers on this scope and when applied to the HTML, it will 
+
+attach to the $scope. 
+elem referres to the element the directive is attached to. 
+attrs is a map containing attributes and their values that are applied to the 
+
+directive in the HTML. 
+	<custom-directive custom-attribute></custom-directive>
+this would be accessed in the link function as
+	attrs.customAttribute
+first name the directive, then returns an object. the object is referred to a 
+
+'directive definition object'. it can list dependencies such as $rootScope and $http. 
+
+while the directive is definined with the name customDirective, using camel case, it 
+
+would be added to the HTML with the words seperated by dashes or colons <custom-
+
+directive> <custom:directive> <ul custom-directive> <ul custom:directive>. angular 
+
+automatically translates it, removing the colon or hyphen to it's camel case form.
+by default, directives inherit their parent's scope but this can be customized when 
+
+needed to use an isolated scope instead. this is defined in the directive definition 
+
+object. if a listener is registered on a service or DOM element which isn't going to 
+
+be destroyed, the listener should be destroyed manually.
+	scope.$on('$destroy',function(){
+	  $interval.cancel(timer);
+
+@: one-way binding
+	scope: {message: '@messageAttr'}
+HTML will use expression for one-way
+	<custom-directive message-attr="{{message}}"></custom-directive>
+
+=: two-way binding
+	scope: {message: '=messageAttr'}
+the HTML will use the scope model instead of an expression
+	<custom-directive message-attr="message"></custom-directive>
+
+PARENT SCOPE: use when directive doesnt manipulate the parent scope properties
+
+CHILD SCOPE: use when the properties and functions set on the scope are not relevant 
+
+to the parent scope and other directives. however all the scope properties and 
+
+functiones are enherited by the parent.
+
+ISOLATED SCOPE: use for directives with functions and properties that are meant for 
+
+internal use and dont need to be accessed by any others. this doesn't enherit from the 
+
+parent.
+
+TRANSCLUSION: enables directives to be wrapped around arbitrary content
+	transclude:'element'
+transclude the element the directive is applied. the element the directive is applied 
+
+to is converted into an HTML comment
+	transclude: true
