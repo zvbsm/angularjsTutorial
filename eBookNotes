@@ -1044,3 +1044,397 @@ transclude the element the directive is applied. the element the directive is ap
 
 to is converted into an HTML comment
 	transclude: true
+
+$PROVIDE: exposes a method called 'provider' registered to a service.
+	angular.module('myApp',[]).config(function($provide){
+	  $provide.provider('alertService',function(){
+	    this.$get=function(){
+	      return function(){
+	        alert('Service in action');}
+$provide is defined in .config(). $provide.provider() registers a new provider. this 
+
+provider is named alertService which can be injected into a controller or other 
+
+service
+	function myCtrl(alertService){
+	  alertService();}
+aside from provider(), $provide also exposes value(),constant(),factory(), and 
+
+service() to register different injectables. Angular creates providers automatically 
+
+for these methods.
+	myApp.config(function($provide){
+	  $provide.factory('alertService',function(){
+	    return function(){
+	      alert('Service in Action');}
+example of calling the factory method with $provide
+or can be called directly on the angular.module()
+	angular.module('myApp').factory('alertService',function(){
+	  return function(){
+	    alert('Service in Action');
+controllers, filters. and directives are not registered via $provide
+controller: $controllerProvider.register() registers the new controller. this is done 
+
+automatically by Angular when calling the method angular.module().controller()
+filter: same as controllers, these are registered with $filterProvider.register() when 
+
+the method is called. the filter instance can be obtained later with $filter
+
+(filterName)
+directive: registered with $compileProvider.directive() 
+
+$INJECTOR: instantiates injectables and resolves dependencies. $provide registers the 
+
+injectables with $injector. $injector uses the code provided by $provide to 
+
+instantiate the injectables.
+	function myCtrl($scope,$http,mySrvc){...}
+	$injector.instantiate(myCtrl);
+
+FILTER: filters can accept multiple arguments which are passed using a colon to 
+
+seperate each one.
+	{{expression | myFilter: arg1 : arg2 : arg3 }}
+custom filters can be registered by calling angular.module().filter()
+	angular.module('myApp',[]).filter('limitChars',function(){
+	  return function(input,characterCount){
+	    return(input.length > characterCount) ?
+	      input.substring(0,characterCount) : input;}
+this filer would be applied to the DOM where 30 is the number specified for 
+
+characterCount. lowercase is chained to the filter using another pipe '|'
+	{{content | limitChars : 30 | lowercase}}
+keep in mind how the data is being processed with the filter to avoid excessive memory 
+
+consumption, such as sorting data before filtering the data. this would make the 
+
+filter sort more than it needs to.
+can use isStrict with boolean to set the filter to be strict or not
+	<input type="checkbox" ng-model="isStrict"/>
+
+LIMITTO: limit how many items are listed to a specified number
+	<li ng-repeat="book in books | filter:{name:filterText}:strict | 
+
+orderBy:'name' | limitTo:'5'">
+
+ANIMATION: is provided seperately from angularJS as 'angular-animate.js' script. 
+	angular.module('myApp',['ngAnimate']);
+declared as dependency with the name ngAnimate.
+
+NG-IF: 
+	<div ng-init="isShown=true">
+	  <input type="checkbox" ng-model="isShown"/>Show
+	  <div class="animation-class" ng-if="isShown">
+when Angular inserts the template, ng-enter class is added to the element. this would 
+
+be used for the starting animation. ng-enter-active is added next for the end of 
+
+transition. this would be used to complete the animation. 
+	.animation-class.ng-enter {
+	  -moz-transition: 1.5s linear all;
+	  opacity: 0;
+	  background: red;}
+	.animation-class.ng-enter.ng-enter-active {
+	  opacity: 1;}
+a transition is triggered in the first class. ends with ng-enter-active, setting 
+
+opacity to 1, then ng-enter and ng-enter-active are removed. it appears as a fade-in 
+
+effect via ng-if. ng-if adds 2 more classes ng-leave and ng-leave-active which can be 
+
+used to animate the template being removed. 
+	.animation-class.ng-leave{
+	  -moz-transition: 1.5s linear all;}
+	.animation-class.ng-leave.ng-leave-active{
+	  opacity: 0;}
+other directives that add and remove CSS classes:
+ngIf,ngView: 		Event=enter, Start=.ng-enter, End=.ng-enter.active
+ngInclude,ngRepeate: 	Event=enter, Start=.ng-enter, End=.ng-enter.active
+ngIf,ngView: 		Event=leave, Start=.ng-leave, End=.ng-leave-active
+ngInclude,ngRepeate: 	Event=leave, Start=.ng-leave, End=.ng-leave-active
+ngRepeat: 		Event=move,  Start=.ng-move,  End=.ng-move-active
+
+ngShow,ngHide:		    Start=.ng-hide-add,     End=.ng-hide-add-active
+ngShow,ngHide:		    Start=.ng-hide-remove,  End=.ng-hide-remove-active
+ngClassclass={{classname}}: Start=.CLASSNAME-add,   End=.CLASSNAME-add-active
+ngClassclass={{classname}}: Start=.CLASSNAME-remove End=.CLASSNAME-remove-active
+
+@KEYFRAMES: the CSS code will target the animation class and the animations will be 
+
+managed with @keyframes blocks.
+	.animation-class.ng-hide-remove {
+	  -moz-animation: 1.5s fade-in;
+	  animation: 1.5s fade-in;}
+	@keyframes fade-in {
+	  from { opacity:0;background:red; }
+	  to { opacity:1; }
+	}
+	@-moz-keyframes fade-in {
+	  from { opacity:0; background:red; }
+	  to { opacity:1; }
+keyframs not compatible with IE9 or less
+
+$ANIMATE: used for creating animations with custom directives. $animate is injected 
+
+into the directive's factory function. defines functions invoked within the directive 
+
+to trigger the animations.
+enter(elem,parent,after,callback): appends child element to parent or 'after' node, 
+
+then runs enter animation.
+leave(elem,callback): runs leave animation and removes element from DOM
+move(elem,parent,after,callback): moves element to parent or 'after' node, then runs 
+
+move animation
+addClass(elem,className,callback): runs addClass animation, adds specified class to 
+
+the element.
+removeClass(elem,className,callback): runs removeClass animation, then removes the 
+
+specified class from the element.
+	angular.module('myAnimateMod',['ngAnimate']).directive('shadeDiv',function
+
+($animate,$timeout){
+	return{
+	  link: function(scope, elem, attrs){
+	    scope.generateRandom = function(){
+	      scope.randomValue=Math.random().toFixed(2);
+	      if(scope.randomValue>0.5){
+	        $animate.addClass(elem.find('.animation-class'),'shake');
+	        $timeout(function(){
+	         $animate.removeClass(elem.find('.animation-class'),'shake');
+	         }, 2000);
+	...
+	<li class="animation-class">{{randomValue}}</li>
+CSS3 keyframes used to create the shake effect
+	.animation-class{
+	  -moz-animation-duration: 5s;
+	  animation-duration: 5s;
+	  -moz-animation-fill-mode: both;
+	  animation-fill-mode: both;}
+	@-moz-keyframes shake {
+	  0%, 100% {-moz-transform: translateX(0);}
+	  10%, 30%, 50%, 70%, 90% {-moz-transform: translateX(-10px);}
+	  20%, 40%, 60%, 80% {-moz-transform: translateX(10px);}}
+	@keyframes shake {
+	  0%, 100% {transform: translateX(0);}
+	  10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);}
+	  20%, 40%, 60%, 80% {transform: translateX(10px);}}
+	.animation-class.shake {
+	  -moz-animation-name: shake;
+	  animation-name: shake;}
+this example generates a random number, if the number is higher than the specified 
+
+value, a 'shake' animation occurs.
+
+GRUNT: task runner that automates recurring tasks. 
+	npm install grunt-cli -g
+installs grunt globally, then apply grunt to specific app by changing directory to the 
+
+app's root folder, then
+	npm install grunt --save
+then download grunt plugins to automate tasks. they are node modules and are installed 
+
+via npm.
+grunt-contrib-concat: concatenates multiple JS files into one
+grunt-contrib-uglify: minifies JS files
+grunt-contrib-cssmin: minifies CSS files
+grunt-usemin: replaces references to non-optimized files with optimized and 
+
+concatenated file
+grunt-contrib-copy: copies source files into deployable directory
+grunt-contrib-clean: cleans output deployable directory
+update the devDependencies in package.json with the module names.
+	"devDependencies":{
+	  "karm": "~0.20",
+	  ...
+	  "grunt-contrib-concat": "~0.2.0",
+	  "grunt-contrib-uglify": "~0.3.0",
+	  ...}
+then run npm install from app's root directory to install the modules. create 
+
+directory /.../dist to store distribution release. open Gruntfile.js to view events 
+
+during deployment.
+grunt.initConfig provides options for configuring tasks
+clean: ["dist", '.tmp'] cleans up dist and .tmp before copying resources
+useminPrepare and usemin specify files to contain references to scripts. these files 
+
+will be concatenated and minified
+uglify determines what to compress
+these tasks get registered via Gruntfile.js
+	grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-copy');
+	etc...
+then specify what to do when 'grunt' is typed in the terminal. (run the tasks one 
+
+after another)
+	grunt.registerTask('default',[
+	  'clean','copy','useminPrepare','concat','uglify','cssmin',....])
+open index.html to specify which files to concatenate and minify.
+	<!--build:css app/built/app.min.css-->
+	<link rel="stylesheet" href="lib/bootstrap/boostrap.css">
+	<link rel="stylesheet" href="css/app.css">
+	<!-- endbuild -->
+this will combine the two files listed here into a file called app.min.css
+	<!-- build:js app/built/app.min.js -->
+	<scipt src="lib/jquery/jquery.js"></script>
+	...
+	<!-- endbuild -->
+change directory to the root folder and type 'grunt' to deploy. when it finishes, the 
+
+css and js files will be single files instead. the index.html code will appear as
+	<link rel="stylesheet" href="built/app.min.css"/>
+	...
+	<script src="built/app.min.js"></script>
+then can verify by typing in terminal
+	cd sp-blogger/dist/app
+then
+	node ../scripts/web-server.js
+to start the server, then go to url in browser
+
+SOURCE MAPS: creates map between production code and original development code so if 
+
+bugs are encountered after minified, developer can locate exactly where the error came 
+
+from in the original code
+
+INTERNATIONALIZATION: make app accessible world wide. download angular-translate and 
+
+apply it to the app as any other script in the index.html as well as add dependency on 
+
+the module pascalprecht.translate provided by angular-translate.js
+	angular.module('myApp',
+
+['ngSanitize','ngResource',...,'pascalprecht.translate']);
+then add config block to the app and inject $translateProvider
+	angular.module('myApp').config(['$translateProvider',function
+
+($translateProvider){
+	  $translateProvider.translations('en',{
+	    TITLE: 'The App Title',
+	    SUBTITLE: 'Stuff',
+	    COMMENTS: 'More Stuff',
+	    BY: 'Me',
+	    ADD: 'Add'});
+	  $translateProvider.translations('de', {
+	    TITLE: 'My App Title',
+	    SUBTITLE: 'translation of subtitle for this language',
+	...
+	  $translateProvider.preferredLanguage('en');
+after providing the translation, index.html can have a button added to toggle the 
+
+language selected.
+	<button class="..." ng-class="{en:'active'}
+
+[languagePreference.currentLanguage]" ng-click="languagePreferences.switchLanguage
+
+('en')">English</button>
+then add function languagePreferences.switchLanguage() to $rootScope. 
+	angular.module('myApp').run(['$state','$rootScope','$translate',function
+
+($state,$rootScope,$translate){
+	  $state.go('allPosts');
+	  $rootScope.languagePreference={currentLanguage:'en'};
+	  $rootScope.languagePreference.switchLanguage=function(key){
+	    $translate.use(key); //takes key and loads translation written
+	    $rootScope.languagePreference.currentLanguage=key; //applies active class 
+
+to the toggle button in the view
+in index.html, add expression
+	<h1>{{'TITLE' | translate}}</h1>
+	<h4>{{'SUBTITLE' | translate}}</h4>
+	<input type="submit" value="{{'ADD' | translate}}" ng-click="saveComment()"...
+with a lot of translations, its best to seperate them into external files and organize 
+
+them by location, then load them asynchronously.
+
+AUTHENTICATION: process where client verifies their identity to the server
+
+AUTHORIZATION: used by server to determine permissions and resources to the user such 
+
+as guest, member, admin. create the state with admin login, add input for password and 
+
+text, create login controller with a custom service (ex. 'authService') which also 
+
+passes $scope and $state. controller sends user to the admin state if login 
+
+successful. custom service created as factory, authService.login() takes the username 
+
+and password and makes a request to the AUTH_ENDPOINT, the user info is stored in 
+
+authService.user and $cookieStore (downloaded and installed seperately and injected as 
+
+angular-cookies.js ngCookies). logout() sends POST to LOGOUT_ENDPOINT and clears the 
+
+authService.user and $cookieStore. 
+authorization involves using the resolve property in the UI Router. resolve should 
+
+resolve before the controller is loaded. therefore the admin state would be added as 
+
+dependency so if its successfully resolved, user can log in to the admin page, 
+
+otherwise redirect user to the login state. 
+	$stateProvider.state('admin',{
+	  url: '/admin',
+	  abstract: true,
+	  controller: 'AdminController',
+	  resolve:{
+	    user:['authService','$q',function(authService,$q){
+	      return authService.user || $q.reject({unAuthorized:true});}]},
+	  templateUrl: '.../.../...html'
+if the user is authenticated, it is returned successful, otherwise will return a 
+
+promise that always rejects with error.unAuthorized=true, this triggers 
+
+$stateChangeError. $rootScope would have a listener set for $stateChangeError, when 
+
+detected, user is redirected back to the login page 
+	angular.module('myApp.admin').run
+
+(['$rootScope','$state','$cookieStore','authService',function($rootScope,$state,$...){
+	  $rootScope.$on('$stateChangeError', function
+
+(event,toState,toParams,fromState,fromParams,error){
+	    if(error.unAuthorized){
+	      $state.go("login");
+	...
+	    authService.user=$cookieStore.get('user');
+user is also retrieved from $cookieStore when app is loaded and set to 
+
+authService.user incase of page refreshes
+to send an already authenticated user to the admin state, can add a resolve property 
+
+to the login state and check for authService.user. it will reject the state loading 
+
+with error.authorized=true
+	$stateProvider.state('login',{
+	  url:...
+	...
+	  resolve:{
+	    user:['authService','$q',function(authService.$q){
+	      if(authService.user){
+	        return $q.reject({authorized:true});}}]},
+	  templateUrl:'...
+listens to $stateChangeError and checks error.authorized:true. then redirected to 
+
+admin state.
+	$rootScope.$on('$stateChangeError',function(event,toState,toParams,...){
+	  if(error.unAuthorized){
+	    $state.go('login');}
+	  else if(error.authorized){
+	    $state.go('admin.postViewAll');}
+$http needs to send session ID with the request. if the API endpoints belong to the 
+
+same server as the app, this step is not needed. it is defined in the config block
+	$httpProvider.defaults.withCredentials=true;
+
+FIREBASE: can be used with the angular app to store and sync data. (paid service with 
+
+'free hacker plan' available for testing purposes)
+
+AngularJS and ng-conf youtube channels for videos
+
+SitePoint for tutorials
+
+Ionic for angularjs hybrid apps
